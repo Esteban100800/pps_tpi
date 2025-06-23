@@ -1,6 +1,6 @@
 # Propuesta de PPS / Trabajo Integrador
 
-Profesor: Pedroni Juan.
+Profesor: Pedroni Juan. 
 Alumno: Moroz Esteban.
 
 ## Objetivos
