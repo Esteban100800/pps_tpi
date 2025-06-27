@@ -40,8 +40,8 @@ Alumno: Moroz Esteban.
 
 Parámetros:
 
-- **L**: distancia entre ejes (*wheelbase*)  
-- **w**: ancho de vía (*track width*)  
+- **L**: distancia entre ejes  
+- **w**: ancho de vía 
 - **R**: radio de giro  
 - **δᵢ**: ángulo de dirección de la rueda interior  
 - **δₒ**: ángulo de dirección de la rueda exterior  
