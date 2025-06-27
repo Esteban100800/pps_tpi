@@ -173,4 +173,5 @@ $$
 $$
 T = \frac{2\pi}{\omega} = \frac{2\pi}{\frac{V_G}{R}} = \frac{2\pi R}{V_G}
 $$
+
 Este calculo puede ser util para corroborar el tiempo utilizado para realizar un giro o una fraccion de este.
