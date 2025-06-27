@@ -119,10 +119,10 @@ $$
 ### Cálculo explícito de velocidades angulares
 Resolviendo las ecuaciones anteriores para $w_o$ y $w_i$, se obtiene las distintas velocidades angulares para cada una de las ruedas
 $$
-\begin{cases}
+\begin{aligned}
 \omega_o = \frac{V_G \left(2 + \frac{w}{R} \right)}{2r_t} \\
 \omega_i = \frac{V_G \left(2 - \frac{w}{R} \right)}{2r_t}
-\end{cases}
+\end{aligned}
 $$
 Esto es de suma importancia, ya que nos permite calcular la velocidad angular de cada una de las ruedas, medida con un encoder y controlada por un controlador PID.
 
