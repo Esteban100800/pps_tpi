@@ -32,7 +32,8 @@ Alumno: Moroz Esteban.
 
 ## Esquema del vehículo Ackermann
 
-![Texto alternativo](pps_tpi\images\ackermann_model.png)
+![Modelo Ackermann](pps_tpi/images/ackermann_model.png)
+
 
 
 ## Fórmulas de dirección del vehículo
