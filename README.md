@@ -74,6 +74,7 @@ Similar al angulo de rueda interior, la rueda exterior tiene una tangente de su 
 $$
 \tan(\delta) = \frac{L}{R}
 $$
+
 Esta es la relacion entre el largo del vehiculo y el radio formado al mover el servo (δ) grados
 
 
@@ -91,6 +92,7 @@ $$
 (R - \frac{w}{2}) \dot{\theta} = r_t \omega_i
 \end{cases}
 $$
+
 Esta igualdad se puede aplicar solamente cuando el coeficiente de deslizamiento del vehiculo es infima o inexistente.
 
 
@@ -101,6 +103,7 @@ Esta igualdad se puede aplicar solamente cuando el coeficiente de deslizamiento 
 $$
 2R \dot{\theta} = 2V_G = r_t \omega_o + r_t \omega_i \Rightarrow V_G = \frac{r_t \omega_o + r_t \omega_i}{2}
 $$
+
 Al tener un cuerpo rigido, la velocidad general del vehiculo (global) es el promedio de las velocidades tangenciales de las ruedas anexadas a la parte trasera del chasis.
 
 ---
@@ -118,6 +121,7 @@ $$
 
 ### Cálculo explícito de velocidades angulares
 Resolviendo las ecuaciones anteriores para $w_o$ y $w_i$, se obtiene las distintas velocidades angulares para cada una de las ruedas
+
 $$
 \begin{aligned}
 \omega_o &= \frac{V_G \left(2 + \frac{w}{R} \right)}{2r_t} \\
