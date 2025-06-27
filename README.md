@@ -132,13 +132,13 @@ Esto es de suma importancia, ya que nos permite calcular la velocidad angular de
 ### Cinemática del centro del vehículo
 
 $$
-\begin{cases}
-\dot{X} = V_G \cos(\theta) \\
-\dot{Y} = V_G \sin(\theta) \\
-\dot{\theta} = \frac{V_G}{R} = \frac{V_G}{\frac{L}{\tan(\delta)}} = \frac{V_G \tan(\delta)}{L}
-\end{cases}
-
+\begin{aligned}
+\dot{X} &= V_G \cos(\theta) \\
+\dot{Y} &= V_G \sin(\theta) \\
+\dot{\theta} &= \frac{V_G}{R} = \frac{V_G}{\frac{L}{\tan(\delta)}} = \frac{V_G \tan(\delta)}{L}
+\end{aligned}
 $$
+
 
 ---
 
