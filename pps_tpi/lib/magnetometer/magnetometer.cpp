@@ -18,7 +18,7 @@ void Magnetometer::begin() {
     Wire.endTransmission();
 
     Wire.beginTransmission(MAG_ADDR);
-    Wire.write(0x09); // Control Register: 10Hz, 1280 LSB/Gauss, continuous mode
+    Wire.write(0x09); 
     Wire.write(0x1D);
     Wire.endTransmission();
 
