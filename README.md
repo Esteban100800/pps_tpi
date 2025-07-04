@@ -32,7 +32,7 @@ Alumno: Moroz Esteban.
 
 ## Esquema del vehículo Ackermann
 
-![Modelo Ackermann](pps_tpi/images/ackermann_model.png)
+![Modelo Ackermann](images/ackermann_model.png)
 
 
 
@@ -175,3 +175,13 @@ T = \frac{2\pi}{\omega} = \frac{2\pi}{\frac{V_G}{R}} = \frac{2\pi R}{V_G}
 $$
 
 Este calculo puede ser util para corroborar el tiempo utilizado para realizar un giro o una fraccion de este.
+
+
+
+# Introduccion a sensores 
+
+## IMU MPU6050
+
+Este dispositivo(Inertial Measurment Units) es utilizado para medir la velocidad angular en tres ejes (x,y,z) de acuerdo a la orientacion del dispositivo y a su vez permite sensar la aceleracion vertical en cada uno de estos tres ejes.
+
+
