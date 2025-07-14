@@ -1,34 +1,35 @@
-#include <Arduino.h>
-#include <Wire.h>
-#include <magnetometer.h> 
-#include <accelerometer.h>
-#include "web_server.h"
+#include "esp_web_server.h"
+#include "mpu_dmp.h"
 
-Accelerometer accel;
-Magnetometer mag;
-web_server server(accel, mag);  // pasás referencias
+ESPWebServer myServer;
+MPUDMP mpu(2); 
+
+float yaw = 123.45;
+bool started = false;   
+
 void setup()
 {
-  Serial.begin(115200);
-  pinMode(2, OUTPUT);    // Pin 2 es el LED incorporado en ESP32
-  digitalWrite(2, HIGH); // Encender LED para indicar inicio del setup
-  delay(2000);
-  accel.begin(); // Configurar el giroscopio
-  accel.calibrate();
-  mag.begin(); // Configurar el magnetómetro
-  mag.calibrate(); // Calibrar el magnetómetro
 
-  // xTaskCreate(calibration, "MiTarea", 2048, NULL, 1, NULL);
+    Serial.begin(115200);
+    while (!Serial) ; 
+    
+    Serial.println("Presioná una tecla para comenzar...");
+    while (!Serial.available()) {
+    }
+    Serial.read(); 
 
-  server.begin(); // Iniciar el servidor web
-  Serial.println("Setup completo");
+    mpu.begin();
+    myServer.begin();
+    started = true;
+
 }
 
 void loop()
-{
-
-  mag.update(); // Actualizar datos del magnetómetro
-  accel.update(); // Actualizar datos del giroscopio
-  delay(100);
-  server.handleClient();
+{   
+    if (started) {
+        mpu.update();
+    }
+    yaw = mpu.getYaw();
+    myServer.updateSensor(yaw);
+    myServer.loop();
 }

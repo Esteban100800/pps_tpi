@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Sensor UI</title>
+  <script src="chart.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #333;
+      color: white;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+    }
+
+    .menu-btn {
+      font-size: 24px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: -280px;
+      width: 280px;
+      height: 100%;
+      background-color: #444;
+      color: white;
+      padding-top: 60px;
+      transition: left 0.3s;
+      overflow-y: auto;
+    }
+
+    .sidebar.show {
+      left: 0;
+    }
+
+    .sidebar a, .sidebar button {
+      display: block;
+      width: 100%;
+      padding: 10px 20px;
+      color: white;
+      background: none;
+      border: none;
+      text-align: left;
+      cursor: pointer;
+      font-size: 1em;
+    }
+
+    .sidebar a:hover, .sidebar button:hover {
+      background-color: #666;
+    }
+
+    .submenu {
+      display: none;
+      background-color: #555;
+    }
+
+    .submenu.show {
+      display: block;
+    }
+
+    .content {
+      padding: 20px;
+      margin-left: 0;
+      transition: margin-left 0.3s;
+    }
+
+    .tab {
+      display: none;
+    }
+
+    .tab.active {
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <span class="menu-btn" onclick="toggleMenu()">☰</span>
+    <h2 style="margin: 0;">Monitor de Sensores</h2>
+  </header>
+
+  <div class="sidebar" id="menu">
+    <button onclick="toggleSubmenu('graficoSubmenu')">Gráficos ▾</button>
+    <div id="graficoSubmenu" class="submenu">
+      <a href="#" onclick="showTab('yaw')">Yaw</a>
+      <a href="#" onclick="showTab('pitch')">Pitch</a>
+      <a href="#" onclick="showTab('roll')">Roll</a>
+    </div>
+    <a href="#" onclick="showTab('lectura')">Lectura</a>
+    <a href="#" onclick="showTab('config')">Configuración de parametros</a>
+  </div>
+
+  <div class="content">
+    <div id="yaw" class="tab active">
+      <h3>Gráfico Yaw</h3>
+      <canvas id="yawChart" width="400" height="200"></canvas>
+    </div>
+
+    <div id="pitch" class="tab">
+      <h3>Gráfico Pitch</h3>
+      <canvas id="pitchChart" width="400" height="200"></canvas>
+    </div>
+
+    <div id="roll" class="tab">
+      <h3>Gráfico Roll</h3>
+      <canvas id="rollChart" width="400" height="200"></canvas>
+    </div>
+
+    <div id="lectura" class="tab">
+      <h3>Lectura</h3>
+      <p>Yaw: <span id="yawValue">---</span>°</p>
+    </div>
+
+    <div id="config" class="tab">
+      <h3>Configuración</h3>
+      <p>Encender led</p>
+      <button onclick="onLED()">Encender LED</button>
+      <button onclick="offLED()">Encender LED</button>
+    </div>
+  </div>
+
+  <script>
+    function toggleMenu() {
+      document.getElementById("menu").classList.toggle("show");
+    }
+
+    function toggleSubmenu(id) {
+      document.getElementById(id).classList.toggle("show");
+    }
+
+    function showTab(id) {
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      toggleMenu(); // cerrar menú al seleccionar
+    }
+
+    // Crear los tres gráficos
+    const createChart = (canvasId, label, color, yMin, yMax) => {
+      const ctx = document.getElementById(canvasId).getContext('2d');
+      return new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            label,
+            data: [],
+            borderColor: color,
+            fill: false,
+            borderWidth: 1
+          }]
+        },
+        options: {
+          animation: false,
+          scales: {
+            x: { display: false },
+            y: { min: yMin, max: yMax }
+          }
+        }
+      });
+    };
+
+    const yawChart = createChart("yawChart", "Yaw", "blue", -180, 180);
+    const pitchChart = createChart("pitchChart", "Pitch", "green", -90, 90);
+    const rollChart = createChart("rollChart", "Roll", "red", -180, 180);
+
+    async function getData() {
+      try {
+        const res = await fetch("/data");
+        const json = await res.json();
+        const { yaw, pitch, roll } = json;
+
+        document.getElementById("yawValue").innerText = yaw.toFixed(2);
+
+        // Actualizar todos los gráficos
+        [
+          [yawChart, yaw],
+          [pitchChart, pitch],
+          [rollChart, roll]
+        ].forEach(([chart, value]) => {
+          chart.data.labels.push('');
+          chart.data.datasets[0].data.push(value);
+          if (chart.data.labels.length > 100) {
+            chart.data.labels.shift();
+            chart.data.datasets[0].data.shift();
+          }
+          chart.update();
+        });
+
+      } catch (e) {
+        console.error("Error al obtener datos:", e);
+      }
+    }
+    function onLED() {
+      fetch('/led/on')
+        .then(response => {
+          if (!response.ok) throw new Error("No se pudo encender el LED");
+          return response.text();
+        })
+        .then(text => console.log("Respuesta:", text))
+        .catch(err => console.error("Error:", err));
+    }
+        function offLED() {
+      fetch('/led/off')
+        .then(response => {
+          if (!response.ok) throw new Error("No se pudo apagar el LED");
+          return response.text();
+        })
+        .then(text => console.log("Respuesta:", text))
+        .catch(err => console.error("Error:", err));
+    }
+
+
+    setInterval(getData, 100);
+  </script>
+
+</body>
+</html>
