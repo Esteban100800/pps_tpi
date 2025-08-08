@@ -1,86 +1,11 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="UTF-8">
   <title>Sensor UI</title>
   <script src="chart.js"></script>
-  <style>
-    body {
-      font-family: sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-
-    header {
-      background-color: #333;
-      color: white;
-      padding: 10px;
-      display: flex;
-      align-items: center;
-    }
-
-    .menu-btn {
-      font-size: 24px;
-      cursor: pointer;
-      margin-right: 10px;
-    }
-
-    .sidebar {
-      position: fixed;
-      top: 0;
-      left: -280px;
-      width: 280px;
-      height: 100%;
-      background-color: #444;
-      color: white;
-      padding-top: 60px;
-      transition: left 0.3s;
-      overflow-y: auto;
-    }
-
-    .sidebar.show {
-      left: 0;
-    }
-
-    .sidebar a, .sidebar button {
-      display: block;
-      width: 100%;
-      padding: 10px 20px;
-      color: white;
-      background: none;
-      border: none;
-      text-align: left;
-      cursor: pointer;
-      font-size: 1em;
-    }
-
-    .sidebar a:hover, .sidebar button:hover {
-      background-color: #666;
-    }
-
-    .submenu {
-      display: none;
-      background-color: #555;
-    }
-
-    .submenu.show {
-      display: block;
-    }
-
-    .content {
-      padding: 20px;
-      margin-left: 0;
-      transition: margin-left 0.3s;
-    }
-
-    .tab {
-      display: none;
-    }
-
-    .tab.active {
-      display: block;
-    }
-  </style>
+  <link rel="stylesheet" href="css/styles.css">
 </head>
 
 <body>
@@ -91,11 +16,12 @@
   </header>
 
   <div class="sidebar" id="menu">
+    <button class="close-btn" onclick="toggleMenu()">≡</button>
     <button onclick="toggleSubmenu('graficoSubmenu')">Gráficos ▾</button>
     <div id="graficoSubmenu" class="submenu">
       <a href="#" onclick="showTab('yaw')">Yaw</a>
-      <a href="#" onclick="showTab('pitch')">Pitch</a>
-      <a href="#" onclick="showTab('roll')">Roll</a>
+      <a href="#" onclick="showTab('motor')">RPM motor</a>
+      <a href="#" onclick="showTab('motor2')">RPM motor 2</a>
     </div>
     <a href="#" onclick="showTab('lectura')">Lectura</a>
     <a href="#" onclick="showTab('config')">Configuración de parametros</a>
@@ -103,126 +29,135 @@
 
   <div class="content">
     <div id="yaw" class="tab active">
-      <h3>Gráfico Yaw</h3>
-      <canvas id="yawChart" width="400" height="200"></canvas>
+      <div class="chart-container">
+        <div class="chart-section">
+          <canvas id="yawChart" width="400" height="200"></canvas>
+        </div>
+        <div class="controls-section">
+          <h4>Control Yaw/Servo</h4>
+          <label for="setpoint_servo">Setpoint (°):</label>
+          <input type="number" id="setpoint_servo" step="0.1" value="55.0">
+          <button onclick="updateSetpointServo()" class="btn2" style="width: 100%; margin-top: 5px;">Actualizar Setpoint</button>
+          <br><br>
+          
+          <h5>Parámetros PID Servo</h5>
+          <label for="kp_servo_yaw">Kp:</label>
+          <input type="number" id="kp_servo_yaw" step="0.01" value="1.8"><br><br>
+          
+          <label for="ki_servo_yaw">Ki:</label>
+          <input type="number" id="ki_servo_yaw" step="0.01" value="4.0"><br><br>
+          
+          <label for="kd_servo_yaw">Kd:</label>
+          <input type="number" id="kd_servo_yaw" step="0.001" value="0.005"><br><br>
+          
+          <button onclick="updatePIDServoYaw()" class="btn2">Actualizar PID Servo</button>
+        </div>
+      </div>
     </div>
 
-    <div id="pitch" class="tab">
-      <h3>Gráfico Pitch</h3>
-      <canvas id="pitchChart" width="400" height="200"></canvas>
+    <div id="motor" class="tab">
+      <div class="chart-container">
+        <div class="chart-section">
+          <canvas id="motorChart" width="400" height="200"></canvas>
+        </div>
+        <div class="controls-section">
+          <h4>Control Motor</h4>
+          <label for="setpoint_motor">Setpoint RPM:</label>
+          <input type="number" id="setpoint_motor" step="0.1" value="12.0">
+          <button onclick="updateSetpointMotor()" class="btn2" style="width: 100%; margin-top: 5px;">Actualizar Setpoint</button>
+          <br><br>
+          
+          <h5>Parámetros PID Motor</h5>
+          <label for="kp_motor">Kp:</label>
+          <input type="number" id="kp_motor" step="0.01" value="2.0"><br><br>
+          
+          <label for="ki_motor">Ki:</label>
+          <input type="number" id="ki_motor" step="0.01" value="2.0"><br><br>
+          
+          <label for="kd_motor">Kd:</label>
+          <input type="number" id="kd_motor" step="0.01" value="0.0"><br><br>
+          
+          <button onclick="updatePIDMotor()" class="btn2">Actualizar PID Motor</button>
+        </div>
+      </div>
     </div>
 
-    <div id="roll" class="tab">
-      <h3>Gráfico Roll</h3>
-      <canvas id="rollChart" width="400" height="200"></canvas>
+    <div id="motor2" class="tab">
+      <div class="chart-container">
+        <div class="chart-section">
+          <canvas id="motor2Chart" width="400" height="200"></canvas>
+        </div>
+        <div class="controls-section">
+          <h4>Control Motor 2</h4>
+          <label for="setpoint_motor2">Setpoint (RPM):</label>
+          <input type="number" id="setpoint_motor2" step="0.1" value="12.0">
+          <button onclick="updateSetpointMotor2()" class="btn2" style="width: 100%; margin-top: 5px;">Actualizar Setpoint</button>
+          <br><br>
+          
+          <h5>Parámetros PID Motor 2</h5>
+          <label for="kp_motor2">Kp:</label>
+          <input type="number" id="kp_motor2" step="0.01" value="2.0"><br><br>
+          
+          <label for="ki_motor2">Ki:</label>
+          <input type="number" id="ki_motor2" step="0.01" value="2.0"><br><br>
+          
+          <label for="kd_motor2">Kd:</label>
+          <input type="number" id="kd_motor2" step="0.01" value="0.0"><br><br>
+          
+          <button onclick="updatePIDMotor2()" class="btn2">Actualizar PID Motor 2</button>
+        </div>
+      </div>
     </div>
 
     <div id="lectura" class="tab">
       <h3>Lectura</h3>
       <p>Yaw: <span id="yawValue">---</span>°</p>
+      <p>Motor RPM: <span id="motorValue">---</span></p>
+      <p>Motor 2 RPM: <span id="motor2Value">---</span></p>
     </div>
 
     <div id="config" class="tab">
       <h3>Configuración</h3>
-      <p>Encender led</p>
-      <button onclick="onLED()">Encender LED</button>
-      <button onclick="offLED()">Encender LED</button>
+
+      <p>Encender LED</p>
+      <button onclick="onLED()" class="btn2">Encender LED</button>
+      <button onclick="offLED()" class="btn2">Apagar LED</button>
+
+      <hr>
+
+      <h4>Parámetros PID Motor</h4>
+      <label for="kp">Kp:</label>
+      <input type="number" id="kp" step="0.01" value="2.0"><br><br>
+
+      <label for="ki">Ki:</label>
+      <input type="number" id="ki" step="0.01" value="2.0"><br><br>
+
+      <label for="kd">Kd:</label>
+      <input type="number" id="kd" step="0.01" value="0.0"><br><br>
+
+      <button onclick="updatePID()" class="btn2">Actualizar PID Motor</button>
+
+      <hr>
+
+      <h4>Parámetros PID Servo</h4>
+      <label for="kp_servo">Kp:</label>
+      <input type="number" id="kp_servo" step="0.01" value="1.8"><br><br>
+
+      <label for="ki_servo">Ki:</label>
+      <input type="number" id="ki_servo" step="0.01" value="4.0"><br><br>
+
+      <label for="kd_servo">Kd:</label>
+      <input type="number" id="kd_servo" step="0.01" value="0.005"><br><br>
+
+      <button onclick="updatePIDServo()" class="btn2">Actualizar PID Servo</button>
+
     </div>
+
   </div>
 
-  <script>
-    function toggleMenu() {
-      document.getElementById("menu").classList.toggle("show");
-    }
+  <script src="js/app.js"></script>
 
-    function toggleSubmenu(id) {
-      document.getElementById(id).classList.toggle("show");
-    }
-
-    function showTab(id) {
-      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-      toggleMenu(); // cerrar menú al seleccionar
-    }
-
-    // Crear los tres gráficos
-    const createChart = (canvasId, label, color, yMin, yMax) => {
-      const ctx = document.getElementById(canvasId).getContext('2d');
-      return new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: [],
-          datasets: [{
-            label,
-            data: [],
-            borderColor: color,
-            fill: false,
-            borderWidth: 1
-          }]
-        },
-        options: {
-          animation: false,
-          scales: {
-            x: { display: false },
-            y: { min: yMin, max: yMax }
-          }
-        }
-      });
-    };
-
-    const yawChart = createChart("yawChart", "Yaw", "blue", -180, 180);
-    const pitchChart = createChart("pitchChart", "Pitch", "green", -90, 90);
-    const rollChart = createChart("rollChart", "Roll", "red", -180, 180);
-
-    async function getData() {
-      try {
-        const res = await fetch("/data");
-        const json = await res.json();
-        const { yaw, pitch, roll } = json;
-
-        document.getElementById("yawValue").innerText = yaw.toFixed(2);
-
-        // Actualizar todos los gráficos
-        [
-          [yawChart, yaw],
-          [pitchChart, pitch],
-          [rollChart, roll]
-        ].forEach(([chart, value]) => {
-          chart.data.labels.push('');
-          chart.data.datasets[0].data.push(value);
-          if (chart.data.labels.length > 100) {
-            chart.data.labels.shift();
-            chart.data.datasets[0].data.shift();
-          }
-          chart.update();
-        });
-
-      } catch (e) {
-        console.error("Error al obtener datos:", e);
-      }
-    }
-    function onLED() {
-      fetch('/led/on')
-        .then(response => {
-          if (!response.ok) throw new Error("No se pudo encender el LED");
-          return response.text();
-        })
-        .then(text => console.log("Respuesta:", text))
-        .catch(err => console.error("Error:", err));
-    }
-        function offLED() {
-      fetch('/led/off')
-        .then(response => {
-          if (!response.ok) throw new Error("No se pudo apagar el LED");
-          return response.text();
-        })
-        .then(text => console.log("Respuesta:", text))
-        .catch(err => console.error("Error:", err));
-    }
-
-
-    setInterval(getData, 100);
-  </script>
 
 </body>
+
 </html>

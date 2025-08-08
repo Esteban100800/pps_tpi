@@ -30,8 +30,8 @@ void MPUDMP::initializeDMP() {
     mpu.setZAccelOffset(904);
 
     if (devStatus == 0) {
-        mpu.CalibrateAccel(10);
-        mpu.CalibrateGyro(10);
+        mpu.CalibrateAccel(8);
+        mpu.CalibrateGyro(8);
         mpu.PrintActiveOffsets();
 
         mpu.setDMPEnabled(true);
@@ -77,23 +77,23 @@ void MPUDMP::read() {
 
         yaw_raw_anterior = yaw_raw_actual;
 
-        Serial.print(yaw_raw_actual, 5);
-        Serial.print("\t");
-        Serial.print(yaw, 5);
-        Serial.print("\t");
-        Serial.println(error_acumulado, 5);
+       // Serial.print(yaw_raw_actual, 5);
+       // Serial.print("\t");
+      //  Serial.print(yaw, 5);
+      //  Serial.print("\t");
+       // Serial.println(error_acumulado, 5);
     }
 }
 
 void MPUDMP::calibrateInitialYaw() {
     Serial.println(F("Calibrando yaw inicial..."));
-    while (abs(yaw) < 0.10) {
+    while (abs(yaw) < 0.03) {
         if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer)) {
             mpu.dmpGetQuaternion(&q, fifoBuffer);
             mpu.dmpGetGravity(&gravity, &q);
             mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
             yaw = ypr[0] * 180 / M_PI;
-            Serial.println(yaw);
+            //Serial.println(yaw);
         }
         delay(10);
     }
