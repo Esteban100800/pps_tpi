@@ -30,19 +30,19 @@ void handleServer(void *parameter)
 
     while (1)
     {
-        // Espera hasta 50ms por un valor nuevo
-        if (xQueueReceive(yawQueue, &yawValue, 50 / portTICK_PERIOD_MS) == pdTRUE) {
+        // Espera hasta 10ms por un valor nuevo (reducido de 50ms para respuesta más rápida)
+        if (xQueueReceive(yawQueue, &yawValue, 10 / portTICK_PERIOD_MS) == pdTRUE) {
             myServer.updateSensor(yawValue);
         }
-        if (xQueueReceive(motorQueue, &motorValue, 50 / portTICK_PERIOD_MS) == pdTRUE) {
+        if (xQueueReceive(motorQueue, &motorValue, 10 / portTICK_PERIOD_MS) == pdTRUE) {
             myServer.updateMotor(motorValue);
         }
-        if (xQueueReceive(motor2Queue, &motor2Value, 50 / portTICK_PERIOD_MS) == pdTRUE) {
+        if (xQueueReceive(motor2Queue, &motor2Value, 10 / portTICK_PERIOD_MS) == pdTRUE) {
             myServer.updateMotor2(motor2Value);
         }
 
         myServer.loop();
-        vTaskDelay(80 / portTICK_PERIOD_MS);
+        vTaskDelay(20 / portTICK_PERIOD_MS); // Reducido de 100ms a 20ms para respuesta más rápida
     }
 }
 
@@ -58,7 +58,7 @@ void TaskServoPID(void *pvParameters)
     delay(1000);
     mpu.begin();
 
-    Serial.println("✅ MPU, Motor, Servo y PID inicializados");
+    if (Serial) Serial.println("✅ MPU, Motor, Servo y PID inicializados");
     pid_servo.setSetpoint(55.0); // Setpoint inicial para el servo
 
     while (1)
@@ -85,7 +85,7 @@ void TaskPID(void *pvParameters)
 {   float lastPrintTime = 0; // Último tiempo de impresión  
     motor.begin();
     delay(1000);
-    Serial.println("✅ Motor y PID inicializados");
+    if (Serial) Serial.println("✅ Motor y PID inicializados");
     pid_motor.setSetpoint(12.0); // Setpoint inicial para el motor
 
     while (1)
@@ -99,7 +99,7 @@ void TaskPID(void *pvParameters)
         motor.setPWM((int)output);
 
         unsigned long now = millis();
-        if (now - lastPrintTime >= 100)
+        if (now - lastPrintTime >= 50) // Reducido de 100ms a 50ms para actualización más rápida
         {
             lastPrintTime = now;
 
@@ -114,7 +114,7 @@ void TaskPID2(void *pvParameters)
 {   float lastPrintTime = 0; // Último tiempo de impresión
     motor2.begin();
     delay(1000);
-    Serial.println("✅ Motor2 y PID2 inicializados");
+    if (Serial) Serial.println("✅ Motor2 y PID2 inicializados");
     pid_motor2.setSetpoint(12.0); // Setpoint inicial para el motor2
 
     while (1)
@@ -128,7 +128,7 @@ void TaskPID2(void *pvParameters)
         motor2.setPWM((int)output);
 
         unsigned long now = millis();
-        if (now - lastPrintTime >= 100)
+        if (now - lastPrintTime >= 50) // Reducido de 100ms a 50ms para actualización más rápida
         {
             lastPrintTime = now;
 
@@ -141,18 +141,11 @@ void TaskPID2(void *pvParameters)
 
 void setup()
 {
-
+    // Configurar Serial solo si es necesario, sin bloquear
     Serial.begin(115200);
-
+    
+    // Breve delay para estabilización, pero no dependiente de Serial
     delay(1000);
-    while (!Serial)
-        ;
-
-    Serial.println("Presioná una tecla para comenzar...");
-    while (!Serial.available())
-    {
-    }
-    Serial.read();
 
     //mpu.begin();
     myServer.begin();
@@ -162,7 +155,7 @@ void setup()
     // 10 elementos de tipo float
     if (yawQueue == NULL)
     {
-        Serial.println("Error creando la cola");
+        if (Serial) Serial.println("Error creando la cola");
         while (1)
             ;
     }
@@ -170,7 +163,7 @@ void setup()
 
     if (motorQueue == NULL)
     {
-        Serial.println("Error creando la cola del motor");
+        if (Serial) Serial.println("Error creando la cola del motor");
         while (1)
             ;
     }
@@ -178,7 +171,7 @@ void setup()
     motor2Queue = xQueueCreate(10, sizeof(float)); // Cambiar de int a float
     if (motor2Queue == NULL)
     {
-        Serial.println("Error creando la cola del motor2");
+        if (Serial) Serial.println("Error creando la cola del motor2");
         while (1)
             ;
     }
@@ -191,4 +184,5 @@ void setup()
 
 void loop()
 {
+    vTaskDelete(NULL);
 }

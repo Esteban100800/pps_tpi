@@ -6,7 +6,7 @@ MPUDMP::MPUDMP(uint8_t interruptPin, uint8_t ledPin)
 void MPUDMP::begin() {
     Wire.begin();
     Wire.setClock(400000);
-    Serial.begin(115200);
+    //Serial.begin(115200);
     while (!Serial);
 
     mpu.initialize();
@@ -14,10 +14,10 @@ void MPUDMP::begin() {
     pinMode(ledPin, OUTPUT);
 
     if (mpu.testConnection()) {
-        Serial.println(F("MPU6050 conectado"));
+        if (Serial) Serial.println(F("MPU6050 conectado"));
         initializeDMP();
     } else {
-        Serial.println(F("Fallo conexión con MPU6050"));
+        if (Serial) Serial.println(F("Fallo conexión con MPU6050"));
     }
 }
 
@@ -37,11 +37,13 @@ void MPUDMP::initializeDMP() {
         mpu.setDMPEnabled(true);
         packetSize = mpu.dmpGetFIFOPacketSize();
         dmpReady = true;
-        Serial.println(F("DMP listo"));
+        if (Serial) Serial.println(F("DMP listo"));
     } else {
-        Serial.print(F("Error en DMP (código "));
-        Serial.print(devStatus);
-        Serial.println(F(")"));
+        if (Serial) {
+            Serial.print(F("Error en DMP (código "));
+            Serial.print(devStatus);
+            Serial.println(F(")"));
+        }
     }
 }
 
@@ -86,7 +88,7 @@ void MPUDMP::read() {
 }
 
 void MPUDMP::calibrateInitialYaw() {
-    Serial.println(F("Calibrando yaw inicial..."));
+    if (Serial) Serial.println(F("Calibrando yaw inicial..."));
     while (abs(yaw) < 0.03) {
         if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer)) {
             mpu.dmpGetQuaternion(&q, fifoBuffer);
@@ -98,7 +100,7 @@ void MPUDMP::calibrateInitialYaw() {
         delay(10);
     }
 
-    Serial.println(F("Estabilizado"));
+    if (Serial) Serial.println(F("Estabilizado"));
     yaw_raw_anterior = yaw;
 }
 

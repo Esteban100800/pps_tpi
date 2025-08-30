@@ -279,7 +279,9 @@ En el loop del codigo principal (main.cpp), se actualizan los datos para ser mos
 ## Magnetometro HMC5883l(QMC)
 
 Este dispositivo permite sensar los cambios de campo magnetico en los tres ejes espaciales (x,y,z).
+
 ![Magnetometro qmc5883l](images/mag.png)
+
 El objetivo principal es sensar el norte magnetico de la tierra y obtener una referencia espacial en angulos.
 
 ## Datasheet del sensor HMC5883l (QMC)

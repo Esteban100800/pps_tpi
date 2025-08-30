@@ -1,0 +1,34 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"name": "motor_test",
+			"path": "../../../motor_testing/motor_test"
+		},
+		{
+			"name": "motor_pid_position",
+			"path": "../../../motor_pid_position/motor_pid_position"
+		},
+		{
+			"name": "servo_pid",
+			"path": "../../../servo_testing/servo_pid"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"optional": "cpp",
+			"istream": "cpp",
+			"ostream": "cpp",
+			"system_error": "cpp",
+			"array": "cpp",
+			"functional": "cpp",
+			"tuple": "cpp",
+			"type_traits": "cpp",
+			"utility": "cpp",
+			"memory": "cpp",
+			"random": "cpp"
+		}
+	}
+}

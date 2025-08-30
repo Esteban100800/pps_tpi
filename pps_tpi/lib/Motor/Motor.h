@@ -29,6 +29,7 @@ class Motor {
     // Array estático para manejar múltiples motores
     static Motor* motorInstances[MAX_MOTORS];
     static int motorCount;
+    static bool isrServiceInstalled; // Flag para evitar instalar el servicio múltiples veces
     static void IRAM_ATTR globalEncoderISR0();
     static void IRAM_ATTR globalEncoderISR1();
     static void IRAM_ATTR globalEncoderISR2();

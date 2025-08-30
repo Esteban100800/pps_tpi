@@ -19,6 +19,7 @@
     <button class="close-btn" onclick="toggleMenu()">≡</button>
     <button onclick="toggleSubmenu('graficoSubmenu')">Gráficos ▾</button>
     <div id="graficoSubmenu" class="submenu">
+      <a href="#" onclick="showTab('dashboard')">Dashboard Completo</a>
       <a href="#" onclick="showTab('yaw')">Yaw</a>
       <a href="#" onclick="showTab('motor')">RPM motor</a>
       <a href="#" onclick="showTab('motor2')">RPM motor 2</a>
@@ -28,7 +29,89 @@
   </div>
 
   <div class="content">
-    <div id="yaw" class="tab active">
+    <div id="dashboard" class="tab active">
+      <h3>Dashboard de Control Completo</h3>
+      
+      <!-- Gráfico Yaw/Servo -->
+      <div class="chart-container" style="margin-bottom: 20px;">
+        <div class="chart-section">
+          <canvas id="dashYawChart" width="400" height="200"></canvas>
+        </div>
+        <div class="controls-section">
+          <h4>Control Yaw/Servo</h4>
+          <label for="dash_setpoint_servo">Setpoint (°):</label>
+          <input type="number" id="dash_setpoint_servo" step="0.1" value="55.0">
+          <button onclick="updateSetpointServoDash()" class="btn2" style="width: 100%; margin-top: 5px;">Actualizar Setpoint</button>
+          <br><br>
+          
+          <h5>Parámetros PID Servo</h5>
+          <label for="dash_kp_servo">Kp:</label>
+          <input type="number" id="dash_kp_servo" step="0.01" value="1.8"><br><br>
+          
+          <label for="dash_ki_servo">Ki:</label>
+          <input type="number" id="dash_ki_servo" step="0.01" value="4.0"><br><br>
+          
+          <label for="dash_kd_servo">Kd:</label>
+          <input type="number" id="dash_kd_servo" step="0.001" value="0.005"><br><br>
+          
+          <button onclick="updatePIDServoDash()" class="btn2">Actualizar PID Servo</button>
+        </div>
+      </div>
+
+      <!-- Gráfico Motor 1 -->
+      <div class="chart-container" style="margin-bottom: 20px;">
+        <div class="chart-section">
+          <canvas id="dashMotorChart" width="400" height="200"></canvas>
+        </div>
+        <div class="controls-section">
+          <h4>Control Motor 1</h4>
+          <label for="dash_setpoint_motor">Setpoint (RPM):</label>
+          <input type="number" id="dash_setpoint_motor" step="0.1" value="12.0">
+          <button onclick="updateSetpointMotorDash()" class="btn2" style="width: 100%; margin-top: 5px;">Actualizar Setpoint</button>
+          <br><br>
+          
+          <h5>Parámetros PID Motor 1</h5>
+          <label for="dash_kp_motor">Kp:</label>
+          <input type="number" id="dash_kp_motor" step="0.01" value="2.0"><br><br>
+          
+          <label for="dash_ki_motor">Ki:</label>
+          <input type="number" id="dash_ki_motor" step="0.01" value="2.0"><br><br>
+          
+          <label for="dash_kd_motor">Kd:</label>
+          <input type="number" id="dash_kd_motor" step="0.01" value="0.0"><br><br>
+          
+          <button onclick="updatePIDMotorDash()" class="btn2">Actualizar PID Motor</button>
+        </div>
+      </div>
+
+      <!-- Gráfico Motor 2 -->
+      <div class="chart-container">
+        <div class="chart-section">
+          <canvas id="dashMotor2Chart" width="400" height="200"></canvas>
+        </div>
+        <div class="controls-section">
+          <h4>Control Motor 2</h4>
+          <label for="dash_setpoint_motor2">Setpoint (RPM):</label>
+          <input type="number" id="dash_setpoint_motor2" step="0.1" value="12.0">
+          <button onclick="updateSetpointMotor2Dash()" class="btn2" style="width: 100%; margin-top: 5px;">Actualizar Setpoint</button>
+          <br><br>
+          
+          <h5>Parámetros PID Motor 2</h5>
+          <label for="dash_kp_motor2">Kp:</label>
+          <input type="number" id="dash_kp_motor2" step="0.01" value="2.0"><br><br>
+          
+          <label for="dash_ki_motor2">Ki:</label>
+          <input type="number" id="dash_ki_motor2" step="0.01" value="2.0"><br><br>
+          
+          <label for="dash_kd_motor2">Kd:</label>
+          <input type="number" id="dash_kd_motor2" step="0.01" value="0.0"><br><br>
+          
+          <button onclick="updatePIDMotor2Dash()" class="btn2">Actualizar PID Motor 2</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="yaw" class="tab">
       <div class="chart-container">
         <div class="chart-section">
           <canvas id="yawChart" width="400" height="200"></canvas>

@@ -19,7 +19,7 @@ void ESPWebServer::begin()
     setupRoutes();
 
     server.begin();
-    Serial.println("Servidor iniciado");
+   // Serial.println("Servidor iniciado");
 }
 
 void ESPWebServer::loop()
@@ -46,11 +46,11 @@ void ESPWebServer::mountLittleFS()
 {
     if (!LittleFS.begin())
     {
-        Serial.println("Error montando LittleFS");
+        if (Serial) Serial.println("Error montando LittleFS");
     }
     else
     {
-        Serial.println("LittleFS montado correctamente");
+        if (Serial) Serial.println("LittleFS montado correctamente");
     }
 }
 
@@ -97,12 +97,12 @@ void ESPWebServer::setupRoutes()
     server.on("/led/on", HTTP_GET, [this]()
               {
     digitalWrite(2, HIGH);
-    Serial.println("LED encendido");
+    if (Serial) Serial.println("LED encendido");
     server.send(200, "text/plain", "LED encendido"); });
     server.on("/led/off", HTTP_GET, [this]()
               {
     digitalWrite(2, LOW);
-    Serial.println("LED apagado");
+    if (Serial) Serial.println("LED apagado");
     server.send(200, "text/plain", "LED apagado"); });
     server.on("/update_pid", HTTP_GET, [this]()
               {

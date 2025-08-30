@@ -3,6 +3,7 @@
 // Inicializar variables estáticas
 Motor* Motor::motorInstances[MAX_MOTORS] = {nullptr, nullptr, nullptr, nullptr};
 int Motor::motorCount = 0;
+bool Motor::isrServiceInstalled = false;
 
 Motor::Motor(int ia1, int ia2, int pwm, int channel, int encoder) 
     : ia1Pin(ia1), ia2Pin(ia2), pwmPin(pwm), pwmChannel(channel), 
@@ -13,10 +14,10 @@ Motor::Motor(int ia1, int ia2, int pwm, int channel, int encoder)
         motorIndex = motorCount;
         motorInstances[motorIndex] = this;
         motorCount++;
-        Serial.printf("Motor %d creado en pins IA1=%d, IA2=%d, PWM=%d, ENC=%d\n", 
-                     motorIndex, ia1, ia2, pwm, encoder);
+       // Serial.printf("Motor %d creado en pins IA1=%d, IA2=%d, PWM=%d, ENC=%d\n", 
+                  //   motorIndex, ia1, ia2, pwm, encoder);
     } else {
-        Serial.println("ERROR: Demasiados motores creados!");
+        //Serial.println("ERROR: Demasiados motores creados!");
         motorIndex = -1;
     }
     
@@ -33,6 +34,9 @@ void Motor::begin() {
 
   pinMode(encoderPin, INPUT_PULLUP);
   
+  // Pequeña pausa para evitar conflictos de interrupciones concurrentes
+  delay(100);
+  
   // Asignar la función de interrupción correspondiente según el índice
   switch(motorIndex) {
     case 0:
@@ -48,10 +52,10 @@ void Motor::begin() {
       attachInterrupt(digitalPinToInterrupt(encoderPin), globalEncoderISR3, RISING);
       break;
     default:
-      Serial.println("ERROR: Índice de motor inválido para interrupción");
+      if(Serial) Serial.println("ERROR: Índice de motor inválido para interrupción");
   }
   
-  Serial.printf("Motor %d inicializado con interrupción en pin %d\n", motorIndex, encoderPin);
+  if(Serial) Serial.printf("Motor %d inicializado con interrupción en pin %d\n", motorIndex, encoderPin);
 }
 
 void Motor::setPWM(int pwm) {

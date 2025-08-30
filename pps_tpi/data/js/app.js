@@ -17,13 +17,13 @@ function showTab(id) {
   body.className = ''; // resetear clases
 
   switch (id) {
+    case 'dashboard':
+      body.classList.add('body-dark-blue');
+      break;
     case 'yaw':
       body.classList.add('body-dark-blue');
       break;
     case 'motor':
-      body.classList.add('body-light');
-      break;
-    case 'pitch':
       body.classList.add('body-light');
       break;
     case 'motor2':
@@ -117,6 +117,11 @@ const yawChart = createChart("yawChart", "Yaw", "blue", "orange", -180, 180);
 const motorChart = createChart("motorChart", "RPM Motor", "green", "red", -90, 90);
 const motor2Chart = createChart("motor2Chart", "RPM Motor 2", "purple", "gray", -90, 90);
 
+// Gráficos para el dashboard
+const dashYawChart = createChart("dashYawChart", "Yaw", "blue", "orange", -180, 180);
+const dashMotorChart = createChart("dashMotorChart", "RPM Motor 1", "green", "red", -90, 90);
+const dashMotor2Chart = createChart("dashMotor2Chart", "RPM Motor 2", "purple", "gray", -90, 90);
+
 async function getData() {
   try {
     const res = await fetch("/data");
@@ -132,7 +137,15 @@ async function getData() {
       [motor2Chart, motor2_RPM, setpoint_motor2] // Motor2 con su setpoint
     ];
 
-    chartsData.forEach(([chart, value, setpoint]) => {
+    // Actualizar también los gráficos del dashboard
+    const dashboardChartsData = [
+      [dashYawChart, yaw, setpoint_servo],
+      [dashMotorChart, motor_RPM, setpoint_motor],
+      [dashMotor2Chart, motor2_RPM, setpoint_motor2]
+    ];
+
+    // Actualizar todos los gráficos (individuales y dashboard)
+    [...chartsData, ...dashboardChartsData].forEach(([chart, value, setpoint]) => {
       // Agregar datos al primer dataset (valor actual)
       chart.data.labels.push('');
       chart.data.datasets[0].data.push(value);
@@ -153,6 +166,17 @@ async function getData() {
     // Actualizar valores en los controles también
     if (document.getElementById("motor2Value")) {
       document.getElementById("motor2Value").innerText = motor2_RPM.toFixed(2);
+    }
+
+    // Actualizar valores del dashboard
+    if (document.getElementById("dashYawValue")) {
+      document.getElementById("dashYawValue").innerText = yaw.toFixed(2);
+    }
+    if (document.getElementById("dashMotorValue")) {
+      document.getElementById("dashMotorValue").innerText = motor_RPM.toFixed(2);
+    }
+    if (document.getElementById("dashMotor2Value")) {
+      document.getElementById("dashMotor2Value").innerText = motor2_RPM.toFixed(2);
     }
 
   } catch (e) {
@@ -300,7 +324,101 @@ function updateSetpointMotor2() {
     .catch(err => console.error("Error:", err));
 }
 
+// Funciones para el dashboard
+function updateSetpointServoDash() {
+  const setpoint = document.getElementById("dash_setpoint_servo").value;
+  
+  fetch(`/update_setpoint_servo?setpoint=${setpoint}`)
+    .then(response => {
+      if (!response.ok) throw new Error("Error al actualizar Setpoint Servo");
+      return response.text();
+    })
+    .then(text => {
+      alert("Setpoint Servo actualizado");
+      // Sincronizar con otros campos
+      const mainField = document.getElementById("setpoint_servo");
+      if (mainField) mainField.value = setpoint;
+    })
+    .catch(err => console.error("Error:", err));
+}
+
+function updatePIDServoDash() {
+  const kp = document.getElementById("dash_kp_servo").value;
+  const ki = document.getElementById("dash_ki_servo").value;
+  const kd = document.getElementById("dash_kd_servo").value;
+
+  fetch(`/update_pid_servo?kp=${kp}&ki=${ki}&kd=${kd}`)
+    .then(response => {
+      if (!response.ok) throw new Error("Error al actualizar PID Servo");
+      return response.text();
+    })
+    .then(text => alert("PID Servo actualizado"))
+    .catch(err => console.error("Error:", err));
+}
+
+function updateSetpointMotorDash() {
+  const setpoint = document.getElementById("dash_setpoint_motor").value;
+  
+  fetch(`/update_setpoint_motor?setpoint=${setpoint}`)
+    .then(response => {
+      if (!response.ok) throw new Error("Error al actualizar Setpoint Motor");
+      return response.text();
+    })
+    .then(text => {
+      alert("Setpoint Motor actualizado");
+      // Sincronizar con otros campos
+      const mainField = document.getElementById("setpoint_motor");
+      if (mainField) mainField.value = setpoint;
+    })
+    .catch(err => console.error("Error:", err));
+}
+
+function updatePIDMotorDash() {
+  const kp = document.getElementById("dash_kp_motor").value;
+  const ki = document.getElementById("dash_ki_motor").value;
+  const kd = document.getElementById("dash_kd_motor").value;
+
+  fetch(`/update_pid?kp=${kp}&ki=${ki}&kd=${kd}`)
+    .then(response => {
+      if (!response.ok) throw new Error("Error al actualizar PID Motor");
+      return response.text();
+    })
+    .then(text => alert("PID Motor actualizado"))
+    .catch(err => console.error("Error:", err));
+}
+
+function updateSetpointMotor2Dash() {
+  const setpoint = document.getElementById("dash_setpoint_motor2").value;
+  
+  fetch(`/update_setpoint_motor2?setpoint=${setpoint}`)
+    .then(response => {
+      if (!response.ok) throw new Error("Error al actualizar Setpoint Motor2");
+      return response.text();
+    })
+    .then(text => {
+      alert("Setpoint Motor2 actualizado");
+      // Sincronizar con otros campos
+      const mainField = document.getElementById("setpoint_motor2");
+      if (mainField) mainField.value = setpoint;
+    })
+    .catch(err => console.error("Error:", err));
+}
+
+function updatePIDMotor2Dash() {
+  const kp = document.getElementById("dash_kp_motor2").value;
+  const ki = document.getElementById("dash_ki_motor2").value;
+  const kd = document.getElementById("dash_kd_motor2").value;
+
+  fetch(`/update_pid_motor2?kp=${kp}&ki=${ki}&kd=${kd}`)
+    .then(response => {
+      if (!response.ok) throw new Error("Error al actualizar PID Motor2");
+      return response.text();
+    })
+    .then(text => alert("PID Motor2 actualizado"))
+    .catch(err => console.error("Error:", err));
+}
 
 
 
-setInterval(getData, 100);
+
+setInterval(getData, 50); // Reducido de 100ms a 50ms para actualización más rápida
