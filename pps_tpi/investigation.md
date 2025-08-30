@@ -333,14 +333,14 @@ Se visualiza en cambio de posicion a medida que el angulo de giro de la direccio
 
 #### Steering angle:
 
-![Angulo de la direccion delantera](/images/ang.png)
+![Angulo de la direccion delantera](images/ang.png)
 
 Se observa como el angulo es incrementado de manera lineal entre [0 -  $\frac{pi}{4}$] o 0º y 90º.
 
 
 #### Velocidad de cada rueda:
 
-![Velocidad angular de cada rueda](/images/vel.png)
+![Velocidad angular de cada rueda](images/vel.png)
 
 Se observa como la velocidad angular de la rueda exterior tiene un comportamiento creciente, y que la rueda interior tiende a cero.
 
