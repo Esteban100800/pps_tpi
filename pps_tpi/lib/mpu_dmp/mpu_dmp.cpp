@@ -66,13 +66,13 @@ void MPUDMP::read() {
         mpu.dmpGetQuaternion(&q, fifoBuffer);
         mpu.dmpGetGravity(&gravity, &q);
         mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
-        yaw_raw_actual = ypr[0] * 180 / M_PI;
+        yaw_raw_actual = (-ypr[0]) * 180 / M_PI; //esta invertito, a revisar -ypr{0}
 
         float delta = yaw_raw_actual - yaw_raw_anterior;
 
-        if (abs(delta) <= 0.01 && abs(delta) > 0.001) {
+        if (abs(delta) <= 0.01 && abs(delta) > 0.001) { // Zona muerta para evitar ruido
             error_acumulado += delta;
-        } else if (abs(delta) > 0.012) {
+        } else if (abs(delta) > 0.012) { // aca asumo que efectivamente estoy girando!!
             yaw += delta;
             error_acumulado *= 0.5;
         }

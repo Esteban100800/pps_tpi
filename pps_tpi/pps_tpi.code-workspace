@@ -14,6 +14,28 @@
 		{
 			"name": "servo_pid",
 			"path": "../../../servo_testing/servo_pid"
+		},
+		{
+			"name": "Fake_dns",
+			"path": "../../../cysr/Fake_dns"
+		},
+		{
+			"name": "cysr_embebidos",
+			"path": "../../../cysr/cysr_embebidos"
+		},
+		{
+			"name": "md5_ex",
+			"path": "../../../cysr/md5_ex"
+		},
+		{
+			"name": "server_crypto",
+			"path": "../../../cysr/server_crypto"
+		},
+		{
+			"path": "../../../TPS_ARQUI"
+		},
+		{
+			"path": "../../../TP2_UART"
 		}
 	],
 	"settings": {

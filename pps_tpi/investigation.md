@@ -4,8 +4,7 @@
 
 ## Esquema del vehículo Ackermann
 
-![Modelo Ackermann](/images/ackermann_model.png)
-
+![Modelo Ackermann](images/ackermann_model.png)
 
 
 ## Fórmulas de dirección del vehículo
@@ -327,7 +326,7 @@ end
 
 #### Posicion:
 
-![Posicion del vehiculo](/images/pos.png)
+![Posicion del vehiculo](images/pos.png)
 
 Se visualiza en cambio de posicion a medida que el angulo de giro de la direccion delantera cambia entre 0º y 45º.
 

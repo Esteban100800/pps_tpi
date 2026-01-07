@@ -1,8 +1,8 @@
 #include "PIDController.h"
 #include <Arduino.h>
 
-PIDController::PIDController(Motor &m, float p, float i, float d)
-    : motor(m), kp(p), ki(i), kd(d), integral(0), prevError(0), setpoint(0), lastPrintTime(0), dt(0.02), delta_error(0.08) {}
+PIDController::PIDController(float p, float i, float d)
+    : kp(p), ki(i), kd(d), integral(0), prevError(0), setpoint(0), lastPrintTime(0), dt(0.02), delta_error(0.08) {}
 
 
 
@@ -31,6 +31,7 @@ float PIDController::compute(float value, float max_integral)
   float real_derivative = derivative * kd;
 
   float output = kp * error + ki * integral + real_derivative;
+
 
   //unsigned long now = millis();
   /*if (now - lastPrintTime >= 100)
