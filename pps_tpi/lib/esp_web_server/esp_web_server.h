@@ -4,6 +4,11 @@
 #include <WebServer.h>
 #include "PIDController.h"
 #include "Motor.h"
+#include "car_functions.h"
+#include "dubin.h"
+#include "position.h"
+#include "differential.h"
+
 
 class ESPWebServer
 {
@@ -17,11 +22,14 @@ private:
     Motor &motor2;
     PIDController &pid_motor2;
     float motor2_RPM;
+    PositionEstimator &odom;
+    DubinsPlanner &planner;
 
     void mountLittleFS(); // Montar LittleFS
     void setupRoutes();   // Configurar rutas
 public:
-    ESPWebServer(Motor& m, PIDController& pid_servo, PIDController& pid_motor, Motor& m2, PIDController& pid_motor2); // Constructor por referencia
+    ESPWebServer(Motor& m, PIDController& pid_servo, PIDController& pid_motor, Motor& m2, PIDController& pid_motor2,
+                PositionEstimator &odom, DubinsPlanner &planner); // Constructor por referencia
     void begin();                                                            // Inicia WiFi, LittleFS y servidor
     void loop();                                                             // Maneja peticiones entrantes
     void updateSensor(float yaw);                                            // Actualiza valor del sensor

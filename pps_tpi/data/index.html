@@ -20,6 +20,7 @@
     <button onclick="toggleSubmenu('graficoSubmenu')">Gráficos ▾</button>
     <div id="graficoSubmenu" class="submenu">
       <a href="#" onclick="showTab('dashboard')">Dashboard Completo</a>
+      <a href="#" onclick="showTab('control_posicion')">Control de posicion</a>
       <a href="#" onclick="showTab('yaw')">Yaw</a>
       <a href="#" onclick="showTab('motor')">RPM motor</a>
       <a href="#" onclick="showTab('motor2')">RPM motor 2</a>
@@ -31,7 +32,7 @@
   <div class="content">
     <div id="dashboard" class="tab active">
       <h3>Dashboard de Control Completo</h3>
-      
+
       <!-- Gráfico Yaw/Servo -->
       <div class="chart-container" style="margin-bottom: 20px;">
         <div class="chart-section">
@@ -41,19 +42,20 @@
           <h4>Control Yaw/Servo</h4>
           <label for="dash_setpoint_servo">Setpoint (°):</label>
           <input type="number" id="dash_setpoint_servo" step="0.1" value="55.0">
-          <button onclick="updateSetpointServoDash()" class="btn2" style="width: 100%; margin-top: 5px;">Actualizar Setpoint</button>
+          <button onclick="updateSetpointServoDash()" class="btn2" style="width: 100%; margin-top: 5px;">Actualizar
+            Setpoint</button>
           <br><br>
-          
+
           <h5>Parámetros PID Servo</h5>
           <label for="dash_kp_servo">Kp:</label>
           <input type="number" id="dash_kp_servo" step="0.01" value="1.8"><br><br>
-          
+
           <label for="dash_ki_servo">Ki:</label>
           <input type="number" id="dash_ki_servo" step="0.01" value="4.0"><br><br>
-          
+
           <label for="dash_kd_servo">Kd:</label>
           <input type="number" id="dash_kd_servo" step="0.001" value="0.005"><br><br>
-          
+
           <button onclick="updatePIDServoDash()" class="btn2">Actualizar PID Servo</button>
         </div>
       </div>
@@ -67,19 +69,20 @@
           <h4>Control Motor 1</h4>
           <label for="dash_setpoint_motor">Setpoint (RPM):</label>
           <input type="number" id="dash_setpoint_motor" step="0.1" value="12.0">
-          <button onclick="updateSetpointMotorDash()" class="btn2" style="width: 100%; margin-top: 5px;">Actualizar Setpoint</button>
+          <button onclick="updateSetpointMotorDash()" class="btn2" style="width: 100%; margin-top: 5px;">Actualizar
+            Setpoint</button>
           <br><br>
-          
+
           <h5>Parámetros PID Motor 1</h5>
           <label for="dash_kp_motor">Kp:</label>
           <input type="number" id="dash_kp_motor" step="0.01" value="2.0"><br><br>
-          
+
           <label for="dash_ki_motor">Ki:</label>
           <input type="number" id="dash_ki_motor" step="0.01" value="2.0"><br><br>
-          
+
           <label for="dash_kd_motor">Kd:</label>
           <input type="number" id="dash_kd_motor" step="0.01" value="0.0"><br><br>
-          
+
           <button onclick="updatePIDMotorDash()" class="btn2">Actualizar PID Motor</button>
         </div>
       </div>
@@ -93,19 +96,20 @@
           <h4>Control Motor 2</h4>
           <label for="dash_setpoint_motor2">Setpoint (RPM):</label>
           <input type="number" id="dash_setpoint_motor2" step="0.1" value="12.0">
-          <button onclick="updateSetpointMotor2Dash()" class="btn2" style="width: 100%; margin-top: 5px;">Actualizar Setpoint</button>
+          <button onclick="updateSetpointMotor2Dash()" class="btn2" style="width: 100%; margin-top: 5px;">Actualizar
+            Setpoint</button>
           <br><br>
-          
+
           <h5>Parámetros PID Motor 2</h5>
           <label for="dash_kp_motor2">Kp:</label>
           <input type="number" id="dash_kp_motor2" step="0.01" value="2.0"><br><br>
-          
+
           <label for="dash_ki_motor2">Ki:</label>
           <input type="number" id="dash_ki_motor2" step="0.01" value="2.0"><br><br>
-          
+
           <label for="dash_kd_motor2">Kd:</label>
           <input type="number" id="dash_kd_motor2" step="0.01" value="0.0"><br><br>
-          
+
           <button onclick="updatePIDMotor2Dash()" class="btn2">Actualizar PID Motor 2</button>
         </div>
       </div>
@@ -120,19 +124,20 @@
           <h4>Control Yaw/Servo</h4>
           <label for="setpoint_servo">Setpoint (°):</label>
           <input type="number" id="setpoint_servo" step="0.1" value="55.0">
-          <button onclick="updateSetpointServo()" class="btn2" style="width: 100%; margin-top: 5px;">Actualizar Setpoint</button>
+          <button onclick="updateSetpointServo()" class="btn2" style="width: 100%; margin-top: 5px;">Actualizar
+            Setpoint</button>
           <br><br>
-          
+
           <h5>Parámetros PID Servo</h5>
           <label for="kp_servo_yaw">Kp:</label>
           <input type="number" id="kp_servo_yaw" step="0.01" value="1.8"><br><br>
-          
+
           <label for="ki_servo_yaw">Ki:</label>
           <input type="number" id="ki_servo_yaw" step="0.01" value="4.0"><br><br>
-          
+
           <label for="kd_servo_yaw">Kd:</label>
           <input type="number" id="kd_servo_yaw" step="0.001" value="0.005"><br><br>
-          
+
           <button onclick="updatePIDServoYaw()" class="btn2">Actualizar PID Servo</button>
         </div>
       </div>
@@ -147,19 +152,20 @@
           <h4>Control Motor</h4>
           <label for="setpoint_motor">Setpoint RPM:</label>
           <input type="number" id="setpoint_motor" step="0.1" value="12.0">
-          <button onclick="updateSetpointMotor()" class="btn2" style="width: 100%; margin-top: 5px;">Actualizar Setpoint</button>
+          <button onclick="updateSetpointMotor()" class="btn2" style="width: 100%; margin-top: 5px;">Actualizar
+            Setpoint</button>
           <br><br>
-          
+
           <h5>Parámetros PID Motor</h5>
           <label for="kp_motor">Kp:</label>
           <input type="number" id="kp_motor" step="0.01" value="2.0"><br><br>
-          
+
           <label for="ki_motor">Ki:</label>
           <input type="number" id="ki_motor" step="0.01" value="2.0"><br><br>
-          
+
           <label for="kd_motor">Kd:</label>
           <input type="number" id="kd_motor" step="0.01" value="0.0"><br><br>
-          
+
           <button onclick="updatePIDMotor()" class="btn2">Actualizar PID Motor</button>
         </div>
       </div>
@@ -174,23 +180,39 @@
           <h4>Control Motor 2</h4>
           <label for="setpoint_motor2">Setpoint (RPM):</label>
           <input type="number" id="setpoint_motor2" step="0.1" value="12.0">
-          <button onclick="updateSetpointMotor2()" class="btn2" style="width: 100%; margin-top: 5px;">Actualizar Setpoint</button>
+          <button onclick="updateSetpointMotor2()" class="btn2" style="width: 100%; margin-top: 5px;">Actualizar
+            Setpoint</button>
           <br><br>
-          
+
           <h5>Parámetros PID Motor 2</h5>
           <label for="kp_motor2">Kp:</label>
           <input type="number" id="kp_motor2" step="0.01" value="2.0"><br><br>
-          
+
           <label for="ki_motor2">Ki:</label>
           <input type="number" id="ki_motor2" step="0.01" value="2.0"><br><br>
-          
+
           <label for="kd_motor2">Kd:</label>
           <input type="number" id="kd_motor2" step="0.01" value="0.0"><br><br>
-          
+
           <button onclick="updatePIDMotor2()" class="btn2">Actualizar PID Motor 2</button>
         </div>
       </div>
     </div>
+
+    <hr>
+    <h4>Trayectoria Dubins</h4>
+
+    <label>X objetivo (m):</label>
+    <input type="number" id="goal_x" step="0.01" value="1.0"><br><br>
+
+    <label>Y objetivo (m):</label>
+    <input type="number" id="goal_y" step="0.01" value="1.0"><br><br>
+
+    <label>Theta objetivo (°):</label>
+    <input type="number" id="goal_theta" step="1" value="0"><br><br>
+
+    <button onclick="sendGoal()" class="btn2">Enviar trayectoria</button>
+
 
     <div id="lectura" class="tab">
       <h3>Lectura</h3>

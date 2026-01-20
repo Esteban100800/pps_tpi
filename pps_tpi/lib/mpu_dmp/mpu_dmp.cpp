@@ -66,7 +66,7 @@ void MPUDMP::read() {
         mpu.dmpGetQuaternion(&q, fifoBuffer);
         mpu.dmpGetGravity(&gravity, &q);
         mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
-        yaw_raw_actual = (-ypr[0]) * 180 / M_PI; //esta invertito, a revisar -ypr{0}
+        yaw_raw_actual = (ypr[0]) * 180 / M_PI; //esta invertito, a revisar -ypr{0}
 
         float delta = yaw_raw_actual - yaw_raw_anterior;
 

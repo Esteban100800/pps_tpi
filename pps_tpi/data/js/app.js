@@ -419,6 +419,19 @@ function updatePIDMotor2Dash() {
 }
 
 
+function sendGoal() {
+  const x = document.getElementById("goal_x").value;
+  const y = document.getElementById("goal_y").value;
+  const theta = document.getElementById("goal_theta").value;
+
+  fetch(`/set_goal?x=${x}&y=${y}&theta=${theta}`)
+    .then(res => res.text())
+    .then(txt => console.log("Respuesta ESP32:", txt))
+    .catch(err => console.error(err));
+}
+
+
+
 
 
 setInterval(getData, 50); // Reducido de 100ms a 50ms para actualización más rápida

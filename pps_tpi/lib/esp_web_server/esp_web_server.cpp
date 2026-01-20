@@ -3,9 +3,9 @@
 #include <LittleFS.h>
 
 ESPWebServer::ESPWebServer(Motor &m, PIDController &pid_servo, PIDController &pid_motor,
-                           Motor &m2, PIDController &pid_motor2)
+                           Motor &m2, PIDController &pid_motor2, PositionEstimator &odom, DubinsPlanner &planner)
     : motor(m), pid_servo(pid_servo), pid_motor(pid_motor), motor2(m2),
-      pid_motor2(pid_motor2), server(80), yaw_value(0.0f), motor_RPM(0.0f), motor2_RPM(0.0f) {}
+      pid_motor2(pid_motor2), odom(odom), planner(planner), server(80), yaw_value(0.0f), motor_RPM(0.0f), motor2_RPM(0.0f) {}
 
 void ESPWebServer::begin()
 {
@@ -19,7 +19,7 @@ void ESPWebServer::begin()
     setupRoutes();
 
     server.begin();
-   // Serial.println("Servidor iniciado");
+    // Serial.println("Servidor iniciado");
 }
 
 void ESPWebServer::loop()
@@ -46,11 +46,13 @@ void ESPWebServer::mountLittleFS()
 {
     if (!LittleFS.begin())
     {
-        if (Serial) Serial.println("Error montando LittleFS");
+        if (Serial)
+            Serial.println("Error montando LittleFS");
     }
     else
     {
-        if (Serial) Serial.println("LittleFS montado correctamente");
+        if (Serial)
+            Serial.println("LittleFS montado correctamente");
     }
 }
 
@@ -172,14 +174,50 @@ void ESPWebServer::setupRoutes()
     if (server.hasArg("ki")) pid_motor2.setKi(server.arg("ki").toFloat());
     if (server.hasArg("kd")) pid_motor2.setKd(server.arg("kd").toFloat());
 
-    pid_motor2.reset();
-              });
+    pid_motor2.reset(); });
 
     server.on("/update_setpoint_motor2", HTTP_GET, [this]()
               {
     if (server.hasArg("setpoint")) {
         float setpoint = server.arg("setpoint").toFloat();
         pid_motor2.setSetpoint(setpoint);
+    } });
+
+    server.on("/set_goal", HTTP_GET, [this]()
+              {
+    if (!server.hasArg("x") || !server.hasArg("y") || !server.hasArg("theta")) {
+        server.send(400, "text/plain", "Faltan parametros");
+        return;
     }
-              });
+
+    if(!odom.move()) {
+    server.send(400, "text/plain", "El robot no esta en movimiento, nuevo setpoint aceptado");
+    float x = server.arg("x").toFloat();
+    float y = server.arg("y").toFloat();
+    float theta = server.arg("theta").toFloat(); // en grados
+    Pose start = {odom.getPosition().x, odom.getPosition().y, odom.getPosition().theta};
+    Pose goal= {x, y, theta * DEG_TO_RAD};
+    planner.setStartPose(start);
+    planner.setGoalPose(goal);
+
+    // Reset de control
+    planner.setSegmentIndex(0);
+    planner.setNewSegment(true);
+
+    odom.reset(0, 0, 0);
+    odom.reset_segment_distance();
+    odom.setFinished(false);
+    odom.setMove(true);
+
+    for (int i = 0; i < 3; i++)
+        odom.segments_distances[i] = 0.0f;
+
+    Serial.printf("🎯 Nuevo GOAL: x=%.2f y=%.2f theta=%.1f°\n",
+                  goal.x, goal.y, theta);
+        return;
+    }
+
+
+
+    server.send(200, "text/plain", "OK"); });
 }
