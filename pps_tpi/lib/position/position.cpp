@@ -109,3 +109,19 @@ void PositionEstimator::reset_segment_distance() {
 float PositionEstimator::getSegmentDistance() {
     return segment_distance;
 }
+
+bool PositionEstimator::getChangeSpeed() {
+    return change_speed;
+}
+
+void PositionEstimator::setChangeSpeed(bool change) {
+    this->change_speed = change;
+}
+
+float PositionEstimator::getSpeed() {
+    return speed;
+}
+
+float PositionEstimator::setSpeed(float speed) {
+    this->speed = speed;
+}

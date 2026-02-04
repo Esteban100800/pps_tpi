@@ -2,7 +2,7 @@
 #include <Arduino.h>
 
 PIDController::PIDController(float p, float i, float d)
-    : kp(p), ki(i), kd(d), integral(0), prevError(0), setpoint(0), lastPrintTime(0), dt(0.02), delta_error(0.08) {}
+    : kp(p), ki(i), kd(d), integral(0), prevError(0), setpoint(0), lastPrintTime(0), dt(0.02), delta_error(0.08), error(0) {}
 
 
 
@@ -10,11 +10,13 @@ void PIDController::reset()
 {
   integral = 0;
   prevError = 0;
+  error = 0;
+  real_derivative = 0;
 }
 
 float PIDController::compute(float value, float max_integral)
 {
-  float error = setpoint - value;
+  error = setpoint - value;
 
   if (error > delta_error || error < -delta_error)
   {
@@ -28,7 +30,7 @@ float PIDController::compute(float value, float max_integral)
   float derivative = (error - prevError) / dt;
   prevError = error;
 
-  float real_derivative = derivative * kd;
+  real_derivative = derivative * kd;
 
   float output = kp * error + ki * integral + real_derivative;
 
@@ -91,4 +93,17 @@ float PIDController::getKd() const
 float PIDController::getSetpoint() const
 {
   return setpoint;
+}
+
+
+float PIDController::getError() {
+    return error;
+}
+
+float PIDController::getRealDerivative() {
+    return real_derivative;
+}
+
+float PIDController::getIntegral() {
+    return integral;
 }

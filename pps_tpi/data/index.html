@@ -25,8 +25,7 @@
       <a href="#" onclick="showTab('motor')">RPM motor</a>
       <a href="#" onclick="showTab('motor2')">RPM motor 2</a>
     </div>
-    <a href="#" onclick="showTab('lectura')">Lectura</a>
-    <a href="#" onclick="showTab('config')">Configuración de parametros</a>
+    <a href="#" onclick="showTab('velocidad')">Control de Velocidad</a>
   </div>
 
   <div class="content">
@@ -34,234 +33,300 @@
       <h3>Dashboard de Control Completo</h3>
 
       <!-- Gráfico Yaw/Servo -->
-      <div class="chart-container" style="margin-bottom: 20px;">
-        <div class="chart-section">
-          <canvas id="dashYawChart" width="400" height="200"></canvas>
-        </div>
-        <div class="controls-section">
-          <h4>Control Yaw/Servo</h4>
-          <label for="dash_setpoint_servo">Setpoint (°):</label>
-          <input type="number" id="dash_setpoint_servo" step="0.1" value="55.0">
-          <button onclick="updateSetpointServoDash()" class="btn2" style="width: 100%; margin-top: 5px;">Actualizar
-            Setpoint</button>
-          <br><br>
-
-          <h5>Parámetros PID Servo</h5>
-          <label for="dash_kp_servo">Kp:</label>
-          <input type="number" id="dash_kp_servo" step="0.01" value="1.8"><br><br>
-
-          <label for="dash_ki_servo">Ki:</label>
-          <input type="number" id="dash_ki_servo" step="0.01" value="4.0"><br><br>
-
-          <label for="dash_kd_servo">Kd:</label>
-          <input type="number" id="dash_kd_servo" step="0.001" value="0.005"><br><br>
-
-          <button onclick="updatePIDServoDash()" class="btn2">Actualizar PID Servo</button>
+      <div class="layout pid-hidden">
+        <div class="chart-container" style="margin-bottom: 20px;">
+          <div class="chart-section">
+            <button class="toggle-pid-btn" onclick="togglePID(event)">⚙️ PID</button>
+            <button class="pause-chart-btn" onclick="togglePauseChart('dashYawChart', event)">⏸️</button>
+            <div class="chart-toggles">
+              <label class="chart-toggle-checkbox">
+                <input type="checkbox" onchange="toggleError('dashYawChart', this.checked)">
+                E
+              </label>
+              <label class="chart-toggle-checkbox">
+                <input type="checkbox" onchange="toggleIntegral('dashYawChart', this.checked)">
+                I
+              </label>
+              <label class="chart-toggle-checkbox">
+                <input type="checkbox" onchange="toggleDerivative('dashYawChart', this.checked)">
+                D
+              </label>
+            </div>
+            <canvas id="dashYawChart" width="400" height="200"></canvas>
+          </div>
+          <div class="controls-section pid-panel">
+            <h5>Parámetros PID Servo</h5>
+            <div class="pos-params-row">
+              <label for="dash_kp_servo">Kp:</label>
+              <input type="number" id="dash_kp_servo" step="0.01" value="1.8" class="pos-param-input">
+              <label for="dash_ki_servo">Ki:</label>
+              <input type="number" id="dash_ki_servo" step="0.01" value="4.0" class="pos-param-input">
+              <label for="dash_kd_servo">Kd:</label>
+              <input type="number" id="dash_kd_servo" step="0.001" value="0.005" class="pos-param-input">
+              <button onclick="updatePIDServoDash()" class="pos-param-btn">Actualizar PID</button>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- Gráfico Motor 1 -->
-      <div class="chart-container" style="margin-bottom: 20px;">
-        <div class="chart-section">
-          <canvas id="dashMotorChart" width="400" height="200"></canvas>
-        </div>
-        <div class="controls-section">
-          <h4>Control Motor 1</h4>
-          <label for="dash_setpoint_motor">Setpoint (RPM):</label>
-          <input type="number" id="dash_setpoint_motor" step="0.1" value="12.0">
-          <button onclick="updateSetpointMotorDash()" class="btn2" style="width: 100%; margin-top: 5px;">Actualizar
-            Setpoint</button>
-          <br><br>
-
-          <h5>Parámetros PID Motor 1</h5>
-          <label for="dash_kp_motor">Kp:</label>
-          <input type="number" id="dash_kp_motor" step="0.01" value="2.0"><br><br>
-
-          <label for="dash_ki_motor">Ki:</label>
-          <input type="number" id="dash_ki_motor" step="0.01" value="2.0"><br><br>
-
-          <label for="dash_kd_motor">Kd:</label>
-          <input type="number" id="dash_kd_motor" step="0.01" value="0.0"><br><br>
-
-          <button onclick="updatePIDMotorDash()" class="btn2">Actualizar PID Motor</button>
+      <div class="layout pid-hidden">
+        <div class="chart-container" style="margin-bottom: 20px;">
+          <div class="chart-section">
+            <button class="toggle-pid-btn" onclick="togglePID(event)">⚙️ PID</button>
+            <button class="pause-chart-btn" onclick="togglePauseChart('dashMotorChart', event)">⏸️</button>
+            <div class="chart-toggles">
+              <label class="chart-toggle-checkbox">
+                <input type="checkbox" onchange="toggleError('dashMotorChart', this.checked)">
+                E
+              </label>
+              <label class="chart-toggle-checkbox">
+                <input type="checkbox" onchange="toggleIntegral('dashMotorChart', this.checked)">
+                I
+              </label>
+              <label class="chart-toggle-checkbox">
+                <input type="checkbox" onchange="toggleDerivative('dashMotorChart', this.checked)">
+                D
+              </label>
+            </div>
+            <canvas id="dashMotorChart" width="400" height="200"></canvas>
+          </div>
+          <div class="controls-section pid-panel">
+            <h5>Parámetros PID Motor 1</h5>
+            <div class="pos-params-row">
+              <label for="dash_kp_motor">Kp:</label>
+              <input type="number" id="dash_kp_motor" step="0.01" value="2.0" class="pos-param-input">
+              <label for="dash_ki_motor">Ki:</label>
+              <input type="number" id="dash_ki_motor" step="0.01" value="2.0" class="pos-param-input">
+              <label for="dash_kd_motor">Kd:</label>
+              <input type="number" id="dash_kd_motor" step="0.01" value="0.0" class="pos-param-input">
+              <button onclick="updatePIDMotorDash()" class="pos-param-btn">Actualizar PID</button>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- Gráfico Motor 2 -->
-      <div class="chart-container">
-        <div class="chart-section">
-          <canvas id="dashMotor2Chart" width="400" height="200"></canvas>
+      <div class="layout pid-hidden">
+        <div class="chart-container" style="margin-bottom: 20px;">
+          <div class="chart-section">
+            <button class="toggle-pid-btn" onclick="togglePID(event)">⚙️ PID</button>
+            <button class="pause-chart-btn" onclick="togglePauseChart('dashMotor2Chart', event)">⏸️</button>
+            <div class="chart-toggles">
+              <label class="chart-toggle-checkbox">
+                <input type="checkbox" onchange="toggleError('dashMotor2Chart', this.checked)">
+                E
+              </label>
+              <label class="chart-toggle-checkbox">
+                <input type="checkbox" onchange="toggleIntegral('dashMotor2Chart', this.checked)">
+                I
+              </label>
+              <label class="chart-toggle-checkbox">
+                <input type="checkbox" onchange="toggleDerivative('dashMotor2Chart', this.checked)">
+                D
+              </label>
+            </div>
+            <canvas id="dashMotor2Chart" width="400" height="200"></canvas>
+          </div>
+          <div class="controls-section pid-panel">
+            <h5>Parámetros PID Motor 2</h5>
+            <div class="pos-params-row">
+              <label for="dash_kp_motor2">Kp:</label>
+              <input type="number" id="dash_kp_motor2" step="0.01" value="2.0" class="pos-param-input">
+              <label for="dash_ki_motor2">Ki:</label>
+              <input type="number" id="dash_ki_motor2" step="0.01" value="2.0" class="pos-param-input">
+              <label for="dash_kd_motor2">Kd:</label>
+              <input type="number" id="dash_kd_motor2" step="0.01" value="0.0" class="pos-param-input">
+              <button onclick="updatePIDMotor2Dash()" class="pos-param-btn">Actualizar PID</button>
+            </div>
+          </div>
         </div>
-        <div class="controls-section">
-          <h4>Control Motor 2</h4>
-          <label for="dash_setpoint_motor2">Setpoint (RPM):</label>
-          <input type="number" id="dash_setpoint_motor2" step="0.1" value="12.0">
-          <button onclick="updateSetpointMotor2Dash()" class="btn2" style="width: 100%; margin-top: 5px;">Actualizar
-            Setpoint</button>
-          <br><br>
+      </div>
 
-          <h5>Parámetros PID Motor 2</h5>
-          <label for="dash_kp_motor2">Kp:</label>
-          <input type="number" id="dash_kp_motor2" step="0.01" value="2.0"><br><br>
-
-          <label for="dash_ki_motor2">Ki:</label>
-          <input type="number" id="dash_ki_motor2" step="0.01" value="2.0"><br><br>
-
-          <label for="dash_kd_motor2">Kd:</label>
-          <input type="number" id="dash_kd_motor2" step="0.01" value="0.0"><br><br>
-
-          <button onclick="updatePIDMotor2Dash()" class="btn2">Actualizar PID Motor 2</button>
+      <!-- Gráfico Posición en Dashboard -->
+      <div class="layout pid-hidden">
+        <div class="chart-container position-chart-container" style="margin-bottom: 20px;">
+          <div class="chart-section position-chart-section">
+            <button class="toggle-pid-btn" onclick="togglePID(event)">⚙️ PID</button>
+            <canvas id="dashPositionChart"></canvas>
+          </div>
+          <div class="controls-section pid-panel">
+            <h5>Parámetros de Trayectoria</h5>
+            <div class="pos-params-row">
+              <label for="dash_goal_x">X objetivo (m):</label>
+              <input type="number" id="dash_goal_x" step="0.01" value="1.0" class="pos-param-input">
+              <label for="dash_goal_y">Y objetivo (m):</label>
+              <input type="number" id="dash_goal_y" step="0.01" value="1.0" class="pos-param-input">
+              <label for="dash_goal_theta">Theta objetivo (°):</label>
+              <input type="number" id="dash_goal_theta" step="1" value="0" class="pos-param-input">
+              <button onclick="sendGoalDash()" class="pos-param-btn">Enviar trayectoria</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
     <div id="yaw" class="tab">
-      <div class="chart-container">
-        <div class="chart-section">
-          <canvas id="yawChart" width="400" height="200"></canvas>
-        </div>
-        <div class="controls-section">
-          <h4>Control Yaw/Servo</h4>
-          <label for="setpoint_servo">Setpoint (°):</label>
-          <input type="number" id="setpoint_servo" step="0.1" value="55.0">
-          <button onclick="updateSetpointServo()" class="btn2" style="width: 100%; margin-top: 5px;">Actualizar
-            Setpoint</button>
-          <br><br>
-
-          <h5>Parámetros PID Servo</h5>
-          <label for="kp_servo_yaw">Kp:</label>
-          <input type="number" id="kp_servo_yaw" step="0.01" value="1.8"><br><br>
-
-          <label for="ki_servo_yaw">Ki:</label>
-          <input type="number" id="ki_servo_yaw" step="0.01" value="4.0"><br><br>
-
-          <label for="kd_servo_yaw">Kd:</label>
-          <input type="number" id="kd_servo_yaw" step="0.001" value="0.005"><br><br>
-
-          <button onclick="updatePIDServoYaw()" class="btn2">Actualizar PID Servo</button>
+      <div class="layout pid-hidden">
+        <div class="chart-container">
+          <div class="chart-section">
+            <button class="toggle-pid-btn" onclick="togglePID(event)">⚙️ PID</button>
+            <button class="pause-chart-btn" onclick="togglePauseChart('yawChart', event)">⏸️</button>
+            <div class="chart-toggles">
+              <label class="chart-toggle-checkbox">
+                <input type="checkbox" onchange="toggleError('yawChart', this.checked)">
+                E
+              </label>
+              <label class="chart-toggle-checkbox">
+                <input type="checkbox" onchange="toggleIntegral('yawChart', this.checked)">
+                I
+              </label>
+              <label class="chart-toggle-checkbox">
+                <input type="checkbox" onchange="toggleDerivative('yawChart', this.checked)">
+                D
+              </label>
+            </div>
+            <canvas id="yawChart" width="400" height="200"></canvas>
+          </div>
+          <div class="controls-section pid-panel">
+            <h5>Parámetros PID Servo</h5>
+            <div class="pos-params-row">
+              <label for="kp_servo_yaw">Kp:</label>
+              <input type="number" id="kp_servo_yaw" step="0.01" value="1.8" class="pos-param-input">
+              <label for="ki_servo_yaw">Ki:</label>
+              <input type="number" id="ki_servo_yaw" step="0.01" value="4.0" class="pos-param-input">
+              <label for="kd_servo_yaw">Kd:</label>
+              <input type="number" id="kd_servo_yaw" step="0.001" value="0.005" class="pos-param-input">
+              <button onclick="updatePIDServoYaw()" class="pos-param-btn">Actualizar PID</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
     <div id="motor" class="tab">
-      <div class="chart-container">
-        <div class="chart-section">
-          <canvas id="motorChart" width="400" height="200"></canvas>
-        </div>
-        <div class="controls-section">
-          <h4>Control Motor</h4>
-          <label for="setpoint_motor">Setpoint RPM:</label>
-          <input type="number" id="setpoint_motor" step="0.1" value="12.0">
-          <button onclick="updateSetpointMotor()" class="btn2" style="width: 100%; margin-top: 5px;">Actualizar
-            Setpoint</button>
-          <br><br>
-
-          <h5>Parámetros PID Motor</h5>
-          <label for="kp_motor">Kp:</label>
-          <input type="number" id="kp_motor" step="0.01" value="2.0"><br><br>
-
-          <label for="ki_motor">Ki:</label>
-          <input type="number" id="ki_motor" step="0.01" value="2.0"><br><br>
-
-          <label for="kd_motor">Kd:</label>
-          <input type="number" id="kd_motor" step="0.01" value="0.0"><br><br>
-
-          <button onclick="updatePIDMotor()" class="btn2">Actualizar PID Motor</button>
+      <div class="layout pid-hidden">
+        <div class="chart-container">
+          <div class="chart-section">
+            <button class="toggle-pid-btn" onclick="togglePID(event)">⚙️ PID</button>
+            <button class="pause-chart-btn" onclick="togglePauseChart('motorChart', event)">⏸️</button>
+            <div class="chart-toggles">
+              <label class="chart-toggle-checkbox">
+                <input type="checkbox" onchange="toggleError('motorChart', this.checked)">
+                E
+              </label>
+              <label class="chart-toggle-checkbox">
+                <input type="checkbox" onchange="toggleIntegral('motorChart', this.checked)">
+                I
+              </label>
+              <label class="chart-toggle-checkbox">
+                <input type="checkbox" onchange="toggleDerivative('motorChart', this.checked)">
+                D
+              </label>
+            </div>
+            <canvas id="motorChart" width="400" height="200"></canvas>
+          </div>
+          <div class="controls-section pid-panel">
+            <h5>Parámetros PID Motor</h5>
+            <div class="pos-params-row">
+              <label for="kp_motor">Kp:</label>
+              <input type="number" id="kp_motor" step="0.01" value="2.0" class="pos-param-input">
+              <label for="ki_motor">Ki:</label>
+              <input type="number" id="ki_motor" step="0.01" value="2.0" class="pos-param-input">
+              <label for="kd_motor">Kd:</label>
+              <input type="number" id="kd_motor" step="0.01" value="0.0" class="pos-param-input">
+              <button onclick="updatePIDMotor()" class="pos-param-btn">Actualizar PID</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
     <div id="motor2" class="tab">
-      <div class="chart-container">
-        <div class="chart-section">
-          <canvas id="motor2Chart" width="400" height="200"></canvas>
-        </div>
-        <div class="controls-section">
-          <h4>Control Motor 2</h4>
-          <label for="setpoint_motor2">Setpoint (RPM):</label>
-          <input type="number" id="setpoint_motor2" step="0.1" value="12.0">
-          <button onclick="updateSetpointMotor2()" class="btn2" style="width: 100%; margin-top: 5px;">Actualizar
-            Setpoint</button>
-          <br><br>
-
-          <h5>Parámetros PID Motor 2</h5>
-          <label for="kp_motor2">Kp:</label>
-          <input type="number" id="kp_motor2" step="0.01" value="2.0"><br><br>
-
-          <label for="ki_motor2">Ki:</label>
-          <input type="number" id="ki_motor2" step="0.01" value="2.0"><br><br>
-
-          <label for="kd_motor2">Kd:</label>
-          <input type="number" id="kd_motor2" step="0.01" value="0.0"><br><br>
-
-          <button onclick="updatePIDMotor2()" class="btn2">Actualizar PID Motor 2</button>
+      <div class="layout pid-hidden">
+        <div class="chart-container">
+          <div class="chart-section">
+            <button class="toggle-pid-btn" onclick="togglePID(event)">⚙️ PID</button>
+            <button class="pause-chart-btn" onclick="togglePauseChart('motor2Chart', event)">⏸️</button>
+            <div class="chart-toggles">
+              <label class="chart-toggle-checkbox">
+                <input type="checkbox" onchange="toggleError('motor2Chart', this.checked)">
+                E
+              </label>
+              <label class="chart-toggle-checkbox">
+                <input type="checkbox" onchange="toggleIntegral('motor2Chart', this.checked)">
+                I
+              </label>
+              <label class="chart-toggle-checkbox">
+                <input type="checkbox" onchange="toggleDerivative('motor2Chart', this.checked)">
+                D
+              </label>
+            </div>
+            <canvas id="motor2Chart" width="400" height="200"></canvas>
+          </div>
+          <div class="controls-section pid-panel">
+            <h5>Parámetros PID Motor 2</h5>
+            <div class="pos-params-row">
+              <label for="kp_motor2">Kp:</label>
+              <input type="number" id="kp_motor2" step="0.01" value="2.0" class="pos-param-input">
+              <label for="ki_motor2">Ki:</label>
+              <input type="number" id="ki_motor2" step="0.01" value="2.0" class="pos-param-input">
+              <label for="kd_motor2">Kd:</label>
+              <input type="number" id="kd_motor2" step="0.01" value="0.0" class="pos-param-input">
+              <button onclick="updatePIDMotor2()" class="pos-param-btn">Actualizar PID</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <hr>
-    <h4>Trayectoria Dubins</h4>
-
-    <label>X objetivo (m):</label>
-    <input type="number" id="goal_x" step="0.01" value="1.0"><br><br>
-
-    <label>Y objetivo (m):</label>
-    <input type="number" id="goal_y" step="0.01" value="1.0"><br><br>
-
-    <label>Theta objetivo (°):</label>
-    <input type="number" id="goal_theta" step="1" value="0"><br><br>
-
-    <button onclick="sendGoal()" class="btn2">Enviar trayectoria</button>
-
-
-    <div id="lectura" class="tab">
-      <h3>Lectura</h3>
-      <p>Yaw: <span id="yawValue">---</span>°</p>
-      <p>Motor RPM: <span id="motorValue">---</span></p>
-      <p>Motor 2 RPM: <span id="motor2Value">---</span></p>
+    <div id="control_posicion" class="tab">
+      <h3>Trayectoria Dubins</h3>
+      <div class="layout pid-hidden">
+        <div class="chart-container position-chart-container">
+          <div class="chart-section position-chart-section">
+            <button class="toggle-pid-btn" onclick="togglePID(event)">⚙️ PID</button>
+            <canvas id="positionChart"></canvas>
+          </div>
+          <div class="controls-section pid-panel">
+            <h5>Parámetros de Trayectoria</h5>
+            <div class="pos-params-row">
+              <label for="goal_x">X objetivo (m):</label>
+              <input type="number" id="goal_x" step="0.01" value="1.0" class="pos-param-input">
+              <label for="goal_y">Y objetivo (m):</label>
+              <input type="number" id="goal_y" step="0.01" value="1.0" class="pos-param-input">
+              <label for="goal_theta">Theta objetivo (°):</label>
+              <input type="number" id="goal_theta" step="1" value="0" class="pos-param-input">
+              <button onclick="sendGoal()" class="pos-param-btn">Enviar trayectoria</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div id="config" class="tab">
-      <h3>Configuración</h3>
-
-      <p>Encender LED</p>
-      <button onclick="onLED()" class="btn2">Encender LED</button>
-      <button onclick="offLED()" class="btn2">Apagar LED</button>
-
-      <hr>
-
-      <h4>Parámetros PID Motor</h4>
-      <label for="kp">Kp:</label>
-      <input type="number" id="kp" step="0.01" value="2.0"><br><br>
-
-      <label for="ki">Ki:</label>
-      <input type="number" id="ki" step="0.01" value="2.0"><br><br>
-
-      <label for="kd">Kd:</label>
-      <input type="number" id="kd" step="0.01" value="0.0"><br><br>
-
-      <button onclick="updatePID()" class="btn2">Actualizar PID Motor</button>
-
-      <hr>
-
-      <h4>Parámetros PID Servo</h4>
-      <label for="kp_servo">Kp:</label>
-      <input type="number" id="kp_servo" step="0.01" value="1.8"><br><br>
-
-      <label for="ki_servo">Ki:</label>
-      <input type="number" id="ki_servo" step="0.01" value="4.0"><br><br>
-
-      <label for="kd_servo">Kd:</label>
-      <input type="number" id="kd_servo" step="0.01" value="0.005"><br><br>
-
-      <button onclick="updatePIDServo()" class="btn2">Actualizar PID Servo</button>
-
+    <div id="velocidad" class="tab">
+      <h3>Control de Velocidad del Auto</h3>
+      
+      <div style="max-width: 500px; margin: 20px auto; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+        <h4 style="margin-top: 0;">Ajustar Velocidad</h4>
+        
+        <label for="speed_input">Velocidad (m/s):</label>
+        <input type="number" id="speed_input" step="0.01" value="0.13" min="0" max="1.0" style="width: 100%; padding: 8px; margin: 10px 0;">
+        
+        <button onclick="updateSpeed()" class="btn2" style="width: 100%; margin-top: 10px;">
+          Aplicar Velocidad
+        </button>
+        
+        <div style="margin-top: 20px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 5px;">
+          <p style="margin: 5px 0;"><strong>Velocidad Actual:</strong> <span id="current_speed">0.13</span> m/s</p>
+          <p style="margin: 5px 0; font-size: 0.9em; color: #ccc;">Rango recomendado: 0.05 - 0.5 m/s</p>
+        </div>
+      </div>
     </div>
 
   </div>
 
   <script src="js/app.js"></script>
-
 
 </body>
 

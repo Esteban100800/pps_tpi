@@ -9,9 +9,12 @@ class PIDController {
     unsigned long lastPrintTime;
     float dt;
     float delta_error; // Umbral para el cambio de error
+    float error;
+    float real_derivative;
+    float kp, ki, kd;
 
   public:
-  float kp, ki, kd;
+  
     PIDController( float p, float i, float d);
     void setSetpoint(float s);
     float compute(float value, float max_integral);
@@ -24,4 +27,7 @@ class PIDController {
     void setKp(float kp);
     void setKi(float ki);
     void setKd(float kd);
+    float getError();
+    float getRealDerivative();
+    float getIntegral();
 };

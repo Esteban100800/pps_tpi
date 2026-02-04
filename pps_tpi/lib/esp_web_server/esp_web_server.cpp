@@ -2,9 +2,8 @@
 #include <WiFi.h>
 #include <LittleFS.h>
 
-ESPWebServer::ESPWebServer(Motor &m, PIDController &pid_servo, PIDController &pid_motor,
-                           Motor &m2, PIDController &pid_motor2, PositionEstimator &odom, DubinsPlanner &planner)
-    : motor(m), pid_servo(pid_servo), pid_motor(pid_motor), motor2(m2),
+ESPWebServer::ESPWebServer(PIDController &pid_servo, PIDController &pid_motor, PIDController &pid_motor2, PositionEstimator &odom, DubinsPlanner &planner)
+    : pid_servo(pid_servo), pid_motor(pid_motor),
       pid_motor2(pid_motor2), odom(odom), planner(planner), server(80), yaw_value(0.0f), motor_RPM(0.0f), motor2_RPM(0.0f) {}
 
 void ESPWebServer::begin()
@@ -65,12 +64,39 @@ void ESPWebServer::setupRoutes()
     file.close(); });
     server.on("/data", HTTP_GET, [this]()
               {
-    String json = "{\"yaw\":" + String(yaw_value, 2) + 
-                  ",\"motor_RPM\":" + String(motor_RPM, 2) + 
-                  ",\"motor2_RPM\":" + String(motor2_RPM, 2) + 
-                  ",\"setpoint_servo\":" + String(pid_servo.getSetpoint(), 2) + 
-                  ",\"setpoint_motor\":" + String(pid_motor.getSetpoint(), 2) + 
-                  ",\"setpoint_motor2\":" + String(pid_motor2.getSetpoint(), 2) + "}";
+    Position p = odom.getPosition();
+
+    float err_servo = pid_servo.getError();
+    float err_motor = pid_motor.getError();
+    float err_motor2 = pid_motor2.getError();
+    
+    float deriv_servo = pid_servo.getRealDerivative();
+    float deriv_motor = pid_motor.getRealDerivative();
+    float deriv_motor2 = pid_motor2.getRealDerivative();
+    
+    float integ_servo = pid_servo.getIntegral();
+    float integ_motor = pid_motor.getIntegral();
+    float integ_motor2 = pid_motor2.getIntegral();
+
+    String json = "{"
+    "\"yaw\":" + String(yaw_value, 2) +
+    ",\"motor_RPM\":" + String(motor_RPM, 2) +
+    ",\"motor2_RPM\":" + String(motor2_RPM, 2) +
+    ",\"x\":" + String(p.x, 3) +
+    ",\"y\":" + String(p.y, 3) +
+    ",\"setpoint_servo\":" + String(pid_servo.getSetpoint(), 2) +
+    ",\"setpoint_motor\":" + String(pid_motor.getSetpoint(), 2) +
+    ",\"setpoint_motor2\":" + String(pid_motor2.getSetpoint(), 2) +
+    ",\"err_servo\":" + String(err_servo, 3) +
+    ",\"err_motor\":" + String(err_motor, 3) +
+    ",\"err_motor2\":" + String(err_motor2, 3) +
+    ",\"deriv_servo\":" + String(deriv_servo, 3) +
+    ",\"deriv_motor\":" + String(deriv_motor, 3) +
+    ",\"deriv_motor2\":" + String(deriv_motor2, 3) +
+    ",\"integ_servo\":" + String(integ_servo, 3) +
+    ",\"integ_motor\":" + String(integ_motor, 3) +
+    ",\"integ_motor2\":" + String(integ_motor2, 3) +
+    "}";
     server.send(200, "application/json", json); });
     server.on("/chart.js", HTTP_GET, [this]()
               {
@@ -89,6 +115,16 @@ void ESPWebServer::setupRoutes()
     File file = LittleFS.open("/js/app.js", "r");
     server.streamFile(file, "application/javascript");
     file.close(); });
+
+    server.on("/images/robot.png", HTTP_GET, [this]()
+              {
+    File file = LittleFS.open("/images/robot.png", "r");
+    if (file) {
+        server.streamFile(file, "image/png");
+        file.close();
+    } else {
+        server.send(404, "text/plain", "Imagen no encontrada");
+    } });
 
     server.on("/finisher-header.es5.min.js", HTTP_GET, [this]()
               {
@@ -122,7 +158,7 @@ void ESPWebServer::setupRoutes()
                                 pid_motor.getKi(),
                                 pid_motor.getKd());*/
 
-                  // server.send(200, "text/plain", "Parámetros PID actualizados");
+                  server.send(200, "text/plain", "Parámetros PID actualizados");
               });
 
     server.on("/update_pid_servo", HTTP_GET, [this]()
@@ -139,7 +175,7 @@ void ESPWebServer::setupRoutes()
                                  pid_servo.getKi(),
                                  pid_servo.getKd());*/
 
-                  // server.send(200, "text/plain", "Parámetros PID Servo actualizados");
+                   server.send(200, "text/plain", "Parámetros PID Servo actualizados");
               });
 
     // Endpoints para actualizar setpoints
@@ -150,7 +186,7 @@ void ESPWebServer::setupRoutes()
         pid_servo.setSetpoint(setpoint);
         
         /*Serial.printf("Setpoint Servo actualizado: %.2f\n", setpoint);*/
-        //server.send(200, "text/plain", "Setpoint Servo actualizado");
+        server.send(200, "text/plain", "Setpoint Servo actualizado");
     } else {
         //server.send(400, "text/plain", "Parámetro setpoint faltante");
     } });
@@ -162,9 +198,9 @@ void ESPWebServer::setupRoutes()
         pid_motor.setSetpoint(setpoint);
         
         //Serial.printf("Setpoint Motor actualizado: %.2f\n", setpoint);
-       // server.send(200, "text/plain", "Setpoint Motor actualizado");
+        server.send(200, "text/plain", "Setpoint Motor actualizado");
     } else {
-       // server.send(400, "text/plain", "Parámetro setpoint faltante");
+    server.send(400, "text/plain", "Parámetro setpoint faltante");
     } });
 
     // Endpoints para el motor2
@@ -174,13 +210,16 @@ void ESPWebServer::setupRoutes()
     if (server.hasArg("ki")) pid_motor2.setKi(server.arg("ki").toFloat());
     if (server.hasArg("kd")) pid_motor2.setKd(server.arg("kd").toFloat());
 
-    pid_motor2.reset(); });
+    pid_motor2.reset();
+
+    server.send(200, "text/plain", "PID Motor2 actualizado"); });
 
     server.on("/update_setpoint_motor2", HTTP_GET, [this]()
               {
     if (server.hasArg("setpoint")) {
         float setpoint = server.arg("setpoint").toFloat();
         pid_motor2.setSetpoint(setpoint);
+        server.send(200, "text/plain", "Setpoint Motor2 actualizado");
     } });
 
     server.on("/set_goal", HTTP_GET, [this]()
@@ -190,34 +229,55 @@ void ESPWebServer::setupRoutes()
         return;
     }
 
-    if(!odom.move()) {
-    server.send(400, "text/plain", "El robot no esta en movimiento, nuevo setpoint aceptado");
-    float x = server.arg("x").toFloat();
-    float y = server.arg("y").toFloat();
-    float theta = server.arg("theta").toFloat(); // en grados
-    Pose start = {odom.getPosition().x, odom.getPosition().y, odom.getPosition().theta};
-    Pose goal= {x, y, theta * DEG_TO_RAD};
-    planner.setStartPose(start);
-    planner.setGoalPose(goal);
+    pendingGoal = {
+        server.arg("x").toFloat(),
+        server.arg("y").toFloat(),
+        server.arg("theta").toFloat() * DEG_TO_RAD
+    };
 
-    // Reset de control
-    planner.setSegmentIndex(0);
-    planner.setNewSegment(true);
+    newGoalRequested = true;
 
-    odom.reset(0, 0, 0);
-    odom.reset_segment_distance();
-    odom.setFinished(false);
-    odom.setMove(true);
+    server.send(200, "text/plain", "Nuevo setpoint aceptado"); });
 
-    for (int i = 0; i < 3; i++)
-        odom.segments_distances[i] = 0.0f;
-
-    Serial.printf("🎯 Nuevo GOAL: x=%.2f y=%.2f theta=%.1f°\n",
-                  goal.x, goal.y, theta);
+    server.on("/update_speed", HTTP_GET, [this]() {
+    if (!server.hasArg("speed")) {
+        server.send(400, "text/plain", "Parametro speed faltante");
         return;
     }
 
+    float speed = server.arg("speed").toFloat();
 
+    if (speed < 0.0f || speed > 1.0f) {
+        server.send(400, "text/plain", "Velocidad fuera de rango");
+        return;
+    }
 
-    server.send(200, "text/plain", "OK"); });
+    requestedSpeed = speed;
+    speedRequest = true;
+
+    server.send(200, "text/plain", "Velocidad actualizada");
+});
+
+}
+
+bool ESPWebServer::newGoalAvailable() const
+{
+    return newGoalRequested;
+}
+
+Pose ESPWebServer::getPendingGoal()
+{
+    newGoalRequested = false;
+    return pendingGoal;
+}
+
+bool ESPWebServer::isSpeedRequested() 
+{
+    return speedRequest;
+}
+
+float ESPWebServer::getRequestedSpeed() 
+{
+    speedRequest = false;
+    return requestedSpeed;
 }

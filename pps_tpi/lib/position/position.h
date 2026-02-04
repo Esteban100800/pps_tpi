@@ -46,6 +46,14 @@ public:
 
     float getSegmentDistance();
 
+    bool getChangeSpeed();
+
+    void setChangeSpeed(bool change);
+
+    float getSpeed();
+
+    float setSpeed(float speed);
+
     float segments_distances[3];
 
 private:
@@ -64,6 +72,10 @@ private:
 
     bool moving = false;
     bool finish = true;
+
+    bool change_speed = false;
+
+    float speed = 0.0f;
 
     Position state;
 };

@@ -70,20 +70,14 @@ void MPUDMP::read() {
 
         float delta = yaw_raw_actual - yaw_raw_anterior;
 
-        if (abs(delta) <= 0.01 && abs(delta) > 0.001) { // Zona muerta para evitar ruido
+        if (abs(delta) <= MPU_JITTER_THRESHOLD && abs(delta) > 0.001) { // Zona muerta para evitar ruido
             error_acumulado += delta;
-        } else if (abs(delta) > 0.012) { // aca asumo que efectivamente estoy girando!!
+        } else if (abs(delta) > MPU_MOVING_THRESHOLD) { // aca asumo que efectivamente estoy girando!!
             yaw += delta;
             error_acumulado *= 0.5;
         }
 
         yaw_raw_anterior = yaw_raw_actual;
-
-       // Serial.print(yaw_raw_actual, 5);
-       // Serial.print("\t");
-      //  Serial.print(yaw, 5);
-      //  Serial.print("\t");
-       // Serial.println(error_acumulado, 5);
     }
 }
 
