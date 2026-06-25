@@ -52,7 +52,7 @@ public:
 
     float getSpeed();
 
-    float setSpeed(float speed);
+    void setSpeed(float speed);
 
     float segments_distances[3];
 

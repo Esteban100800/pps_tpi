@@ -24,10 +24,12 @@ private:
     DubinsPlanner &planner;
     bool newGoalRequested = false;
 
-    bool speedRequest = false;
-    float requestedSpeed = 0.0f;
+    volatile bool speedRequest = false;
+    volatile float requestedSpeed = 0.0f;
 
     Pose pendingGoal;
+
+    String algorithmMode = "dubins"; // "dubins" o "rs"
 
     void mountLittleFS(); // Montar LittleFS
     void setupRoutes();   // Configurar rutas
@@ -39,10 +41,14 @@ public:
     void updateSensor(float yaw);                                            // Actualiza valor del sensor
     void updateMotor(float RPM);                                             // Actualiza valor del motor
     void updateMotor2(float RPM);                                            // Actualiza valor del motor2
-    bool newGoalAvailable() const;                                          // Verifica si hay un nuevo objetivo
+    bool getRequested() const;                                          // Verifica si hay un nuevo objetivo
     Pose getPendingGoal();                                                  // Obtiene el objetivo pendiente
     bool isSpeedRequested() ; // Verifica si hay una solicitud de velocidad
     float getRequestedSpeed(); // Obtiene la velocidad solicitada
+    void setRequested(); // Marca que se ha atendido la solicitud de nuevo objetivo
+
+    bool isDubins()     const { return algorithmMode == "dubins"; }
+    bool isReedsShepp() const { return algorithmMode == "rs"; }
 };
 
 #endif

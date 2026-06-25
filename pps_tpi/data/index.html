@@ -32,7 +32,7 @@
     <div id="dashboard" class="tab active">
       <h3>Dashboard de Control Completo</h3>
 
-      <!-- Gráfico Yaw/Servo -->
+      <!-- Grafico Yaw/Servo -->
       <div class="layout pid-hidden">
         <div class="chart-container" style="margin-bottom: 20px;">
           <div class="chart-section">
@@ -69,7 +69,7 @@
         </div>
       </div>
 
-      <!-- Gráfico Motor 1 -->
+      <!-- Grafico Motor 1 -->
       <div class="layout pid-hidden">
         <div class="chart-container" style="margin-bottom: 20px;">
           <div class="chart-section">
@@ -106,7 +106,7 @@
         </div>
       </div>
 
-      <!-- Gráfico Motor 2 -->
+      <!-- Grafico Motor 2 -->
       <div class="layout pid-hidden">
         <div class="chart-container" style="margin-bottom: 20px;">
           <div class="chart-section">
@@ -143,7 +143,7 @@
         </div>
       </div>
 
-      <!-- Gráfico Posición en Dashboard -->
+      <!-- Grafico Posicion en Dashboard -->
       <div class="layout pid-hidden">
         <div class="chart-container position-chart-container" style="margin-bottom: 20px;">
           <div class="chart-section position-chart-section">
@@ -152,6 +152,24 @@
           </div>
           <div class="controls-section pid-panel">
             <h5>Parámetros de Trayectoria</h5>
+
+            <!-- Selector de algoritmo (Dashboard) -->
+            <div style="display:flex; align-items:center; gap:20px; margin-bottom:10px;
+                        padding:8px 12px; background:rgba(255,255,255,0.07); border-radius:8px;">
+              <span style="font-size:0.9em; font-weight:600;">Algoritmo:</span>
+              <label style="display:flex; align-items:center; gap:5px; cursor:pointer; font-size:0.9em;">
+                <input type="radio" name="algorithm_dash" value="dubins" checked
+                       onchange="setAlgorithm('dubins')" style="accent-color:#4fc3f7;">
+                Dubins
+              </label>
+              <label style="display:flex; align-items:center; gap:5px; cursor:pointer; font-size:0.9em;">
+                <input type="radio" name="algorithm_dash" value="rs"
+                       onchange="setAlgorithm('rs')" style="accent-color:#81c784;">
+                Reeds-Shepp
+              </label>
+              <span id="dash_algorithm_status" style="font-size:0.8em; color:#aaa; margin-left:auto;">Dubins activo</span>
+            </div>
+
             <div class="pos-params-row">
               <label for="dash_goal_x">X objetivo (m):</label>
               <input type="number" id="dash_goal_x" step="0.01" value="1.0" class="pos-param-input">
@@ -281,7 +299,27 @@
     </div>
 
     <div id="control_posicion" class="tab">
-      <h3>Trayectoria Dubins</h3>
+      <h3>Control de Posición</h3>
+
+      <!-- Selector de algoritmo -->
+      <div style="display:flex; align-items:center; gap:24px; margin:12px 0 20px 0;
+                  padding:12px 18px; background:rgba(255,255,255,0.08);
+                  border-radius:10px; max-width:480px;">
+        <span style="font-weight:600; font-size:0.95em;">Algoritmo:</span>
+        <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+          <input type="radio" name="algorithm" value="dubins" checked
+                 onchange="setAlgorithm('dubins')" style="accent-color:#4fc3f7;">
+          <span>Dubins</span>
+        </label>
+        <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+          <input type="radio" name="algorithm" value="rs"
+                 onchange="setAlgorithm('rs')" style="accent-color:#81c784;">
+          <span>Reeds-Shepp</span>
+        </label>
+        <span id="algorithm_status"
+              style="font-size:0.82em; color:#aaa; margin-left:auto;">Dubins activo</span>
+      </div>
+
       <div class="layout pid-hidden">
         <div class="chart-container position-chart-container">
           <div class="chart-section position-chart-section">
@@ -327,6 +365,43 @@
   </div>
 
   <script src="js/app.js"></script>
+  <script>
+    function setAlgorithm(mode) {
+      fetch('/set_algorithm?mode=' + mode)
+        .then(r => r.text())
+        .then(() => {
+          const labels = { dubins: 'Dubins activo', rs: 'Reeds-Shepp activo' };
+          // Actualizar indicadores en ambos tabs
+          ['algorithm_status', 'dash_algorithm_status'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = labels[mode] || mode;
+          });
+          // Sincronizar ambos grupos de radio buttons
+          document.querySelectorAll('input[name="algorithm"], input[name="algorithm_dash"]')
+            .forEach(rb => { rb.checked = (rb.value === mode); });
+        })
+        .catch(e => console.error('Error cambiando algoritmo:', e));
+    }
+
+    // Sincroniza el radio button con el estado real del servidor al cargar
+    document.addEventListener('DOMContentLoaded', () => {
+      fetch('/data')
+        .then(r => r.json())
+        .then(d => {
+          if (d.algorithm) {
+            const label = d.algorithm === 'rs' ? 'Reeds-Shepp activo' : 'Dubins activo';
+            // Sincronizar todos los radio buttons y labels
+            document.querySelectorAll('input[name="algorithm"], input[name="algorithm_dash"]')
+              .forEach(rb => { rb.checked = (rb.value === d.algorithm); });
+            ['algorithm_status', 'dash_algorithm_status'].forEach(id => {
+              const el = document.getElementById(id);
+              if (el) el.textContent = label;
+            });
+          }
+        })
+        .catch(() => {});
+    });
+  </script>
 
 </body>
 

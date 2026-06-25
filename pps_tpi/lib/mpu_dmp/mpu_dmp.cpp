@@ -6,18 +6,13 @@ MPUDMP::MPUDMP(uint8_t interruptPin, uint8_t ledPin)
 void MPUDMP::begin() {
     Wire.begin();
     Wire.setClock(400000);
-    //Serial.begin(115200);
-    while (!Serial);
 
     mpu.initialize();
     pinMode(interruptPin, INPUT);
     pinMode(ledPin, OUTPUT);
 
     if (mpu.testConnection()) {
-        if (Serial) Serial.println(F("MPU6050 conectado"));
         initializeDMP();
-    } else {
-        if (Serial) Serial.println(F("Fallo conexión con MPU6050"));
     }
 }
 
@@ -37,13 +32,6 @@ void MPUDMP::initializeDMP() {
         mpu.setDMPEnabled(true);
         packetSize = mpu.dmpGetFIFOPacketSize();
         dmpReady = true;
-        if (Serial) Serial.println(F("DMP listo"));
-    } else {
-        if (Serial) {
-            Serial.print(F("Error en DMP (código "));
-            Serial.print(devStatus);
-            Serial.println(F(")"));
-        }
     }
 }
 
@@ -66,7 +54,7 @@ void MPUDMP::read() {
         mpu.dmpGetQuaternion(&q, fifoBuffer);
         mpu.dmpGetGravity(&gravity, &q);
         mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
-        yaw_raw_actual = (ypr[0]) * 180 / M_PI; //esta invertito, a revisar -ypr{0}
+        yaw_raw_actual = (ypr[0]) * 180 / M_PI; 
 
         float delta = yaw_raw_actual - yaw_raw_anterior;
 
@@ -76,13 +64,11 @@ void MPUDMP::read() {
             yaw += delta;
             error_acumulado *= 0.5;
         }
-
         yaw_raw_anterior = yaw_raw_actual;
     }
 }
 
 void MPUDMP::calibrateInitialYaw() {
-    if (Serial) Serial.println(F("Calibrando yaw inicial..."));
     while (abs(yaw) < 0.03) {
         if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer)) {
             mpu.dmpGetQuaternion(&q, fifoBuffer);
@@ -94,7 +80,6 @@ void MPUDMP::calibrateInitialYaw() {
         delay(10);
     }
 
-    if (Serial) Serial.println(F("Estabilizado"));
     yaw_raw_anterior = yaw;
 }
 

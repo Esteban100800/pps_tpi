@@ -51,11 +51,7 @@ void Motor::begin() {
     case 3:
       attachInterrupt(digitalPinToInterrupt(encoderPin), globalEncoderISR3, RISING);
       break;
-    default:
-      if(Serial) Serial.println("ERROR: Índice de motor inválido para interrupción");
   }
-  
-  if(Serial) Serial.printf("Motor %d inicializado con interrupción en pin %d\n", motorIndex, encoderPin);
 }
 
 void Motor::setPWM(int pwm) {

@@ -39,15 +39,7 @@ void PositionEstimator::updateFromRPM(float rpmRight,
 
     float v = (vR + vL) * 0.5f;
 
-    float lastprint = millis();
-    float now = millis();
-
-    if (now - lastprint >= 100) {
-        lastprint = now;
-        Serial.printf("vR: %.3f m/s, vL: %.3f m/s, v: %.3f m/s\n", vR, vL, v);
-    }
-
-    state.theta = yawRad;   // ← ORIENTACIÓN REAL
+    state.theta = yawRad;   // ← ORIENTACION REAL
 
     state.x += v * cos(state.theta) * dt;
     state.y += v * sin(state.theta) * dt;
@@ -122,6 +114,6 @@ float PositionEstimator::getSpeed() {
     return speed;
 }
 
-float PositionEstimator::setSpeed(float speed) {
+void PositionEstimator::setSpeed(float speed) {
     this->speed = speed;
 }

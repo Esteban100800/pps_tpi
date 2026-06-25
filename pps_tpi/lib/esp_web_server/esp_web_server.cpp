@@ -8,9 +8,9 @@ ESPWebServer::ESPWebServer(PIDController &pid_servo, PIDController &pid_motor, P
 
 void ESPWebServer::begin()
 {
-    // Configurar pin del LED como salida
+
     pinMode(2, OUTPUT);
-    digitalWrite(2, LOW); // Inicialmente apagado
+    digitalWrite(2, LOW); 
 
     WiFi.softAP("ESP32-AP", "12345678");
 
@@ -18,7 +18,7 @@ void ESPWebServer::begin()
     setupRoutes();
 
     server.begin();
-    // Serial.println("Servidor iniciado");
+
 }
 
 void ESPWebServer::loop()
@@ -43,16 +43,7 @@ void ESPWebServer::updateMotor2(float RPM)
 
 void ESPWebServer::mountLittleFS()
 {
-    if (!LittleFS.begin())
-    {
-        if (Serial)
-            Serial.println("Error montando LittleFS");
-    }
-    else
-    {
-        if (Serial)
-            Serial.println("LittleFS montado correctamente");
-    }
+    LittleFS.begin();
 }
 
 void ESPWebServer::setupRoutes()
@@ -96,6 +87,7 @@ void ESPWebServer::setupRoutes()
     ",\"integ_servo\":" + String(integ_servo, 3) +
     ",\"integ_motor\":" + String(integ_motor, 3) +
     ",\"integ_motor2\":" + String(integ_motor2, 3) +
+    ",\"algorithm\":\"" + algorithmMode + "\"" +
     "}";
     server.send(200, "application/json", json); });
     server.on("/chart.js", HTTP_GET, [this]()
@@ -135,12 +127,10 @@ void ESPWebServer::setupRoutes()
     server.on("/led/on", HTTP_GET, [this]()
               {
     digitalWrite(2, HIGH);
-    if (Serial) Serial.println("LED encendido");
     server.send(200, "text/plain", "LED encendido"); });
     server.on("/led/off", HTTP_GET, [this]()
               {
     digitalWrite(2, LOW);
-    if (Serial) Serial.println("LED apagado");
     server.send(200, "text/plain", "LED apagado"); });
     server.on("/update_pid", HTTP_GET, [this]()
               {
@@ -153,10 +143,7 @@ void ESPWebServer::setupRoutes()
 
                   pid_motor.reset();
 
-                  /*Serial.printf("PID Motor actualizado -> Kp: %.2f, Ki: %.2f, Kd: %.2f\n",
-                                pid_motor.getKp(),
-                                pid_motor.getKi(),
-                                pid_motor.getKd());*/
+
 
                   server.send(200, "text/plain", "Parámetros PID actualizados");
               });
@@ -170,10 +157,7 @@ void ESPWebServer::setupRoutes()
                   if (server.hasArg("kd"))
                       pid_servo.setKd(server.arg("kd").toFloat());
 
-                  /* Serial.printf("PID Servo actualizado -> Kp: %.2f, Ki: %.2f, Kd: %.2f\n",
-                                 pid_servo.getKp(),
-                                 pid_servo.getKi(),
-                                 pid_servo.getKd());*/
+
 
                    server.send(200, "text/plain", "Parámetros PID Servo actualizados");
               });
@@ -185,10 +169,10 @@ void ESPWebServer::setupRoutes()
         float setpoint = server.arg("setpoint").toFloat();
         pid_servo.setSetpoint(setpoint);
         
-        /*Serial.printf("Setpoint Servo actualizado: %.2f\n", setpoint);*/
+
         server.send(200, "text/plain", "Setpoint Servo actualizado");
     } else {
-        //server.send(400, "text/plain", "Parámetro setpoint faltante");
+    server.send(400, "text/plain", "Parámetro setpoint faltante");
     } });
 
     server.on("/update_setpoint_motor", HTTP_GET, [this]()
@@ -196,8 +180,7 @@ void ESPWebServer::setupRoutes()
     if (server.hasArg("setpoint")) {
         float setpoint = server.arg("setpoint").toFloat();
         pid_motor.setSetpoint(setpoint);
-        
-        //Serial.printf("Setpoint Motor actualizado: %.2f\n", setpoint);
+
         server.send(200, "text/plain", "Setpoint Motor actualizado");
     } else {
     server.send(400, "text/plain", "Parámetro setpoint faltante");
@@ -239,35 +222,56 @@ void ESPWebServer::setupRoutes()
 
     server.send(200, "text/plain", "Nuevo setpoint aceptado"); });
 
+    server.on("/set_algorithm", HTTP_GET, [this]() {
+    if (!server.hasArg("mode")) {
+        server.send(400, "text/plain", "Parametro mode faltante");
+        return;
+    }
+    String mode = server.arg("mode");
+    if (mode == "dubins" || mode == "rs") {
+        algorithmMode = mode;
+        server.send(200, "text/plain", "Algoritmo: " + algorithmMode);
+    } else {
+        server.send(400, "text/plain", "Modo invalido. Use 'dubins' o 'rs'");
+    }
+});
+
     server.on("/update_speed", HTTP_GET, [this]() {
     if (!server.hasArg("speed")) {
-        server.send(400, "text/plain", "Parametro speed faltante");
+        if (server.client().connected())
+            server.send(400, "text/plain", "Parametro speed faltante");
         return;
     }
 
     float speed = server.arg("speed").toFloat();
 
     if (speed < 0.0f || speed > 1.0f) {
-        server.send(400, "text/plain", "Velocidad fuera de rango");
+        if (server.client().connected())
+            server.send(400, "text/plain", "Velocidad fuera de rango");
         return;
     }
 
     requestedSpeed = speed;
     speedRequest = true;
 
-    server.send(200, "text/plain", "Velocidad actualizada");
+    if (server.client().connected())
+        server.send(200, "text/plain", "Velocidad actualizada");
 });
 
 }
 
-bool ESPWebServer::newGoalAvailable() const
+bool ESPWebServer::getRequested() const
 {
     return newGoalRequested;
 }
 
-Pose ESPWebServer::getPendingGoal()
+void ESPWebServer::setRequested()
 {
     newGoalRequested = false;
+}
+Pose ESPWebServer::getPendingGoal()
+{
+    
     return pendingGoal;
 }
 

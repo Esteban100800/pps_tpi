@@ -45,11 +45,11 @@ void ElectronicDifferential::computeWheelSpeeds(float v)
     float w_R = (v / wheelRadius) * ((2.0f * Length + wheelBase * tanf(delta_max)) / (2.0f * Length));
     float w_L = (v / wheelRadius) * ((2.0f * Length - wheelBase * tanf(delta_max)) / (2.0f * Length));
 
-    // conversión a RPM
+    // conversion a RPM
     float rightRPM = w_R * 60.0f / (2.0f * M_PI);
     float leftRPM  = w_L * 60.0f / (2.0f * M_PI);
 
-    // Limitación de las RPM al máximo permitido
+    // Limitacion de las RPM al maximo permitido
     if (leftRPM > maxRPM)
         leftRPM = maxRPM;
     else if (leftRPM < -maxRPM)

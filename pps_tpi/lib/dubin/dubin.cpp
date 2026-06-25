@@ -136,7 +136,7 @@ bool DubinsPlanner::getTangents(
 
 bool DubinsPlanner::dubinsLRL(const Pose &start, const Pose &goal, DubinsPath &path)
 {
-    // Centros de los círculos izquierdo-inicial y izquierdo-final
+    // Centros de los circulos izquierdo-inicial y izquierdo-final
     Vec2 c1 = {
         start.x + R * std::cos(start.theta + M_PI_2),
         start.y + R * std::sin(start.theta + M_PI_2)};
@@ -148,17 +148,11 @@ bool DubinsPlanner::dubinsLRL(const Pose &start, const Pose &goal, DubinsPath &p
     // Distancia entre centros
     double D = norm(c2 - c1);
 
-    Serial.printf("Distancia entre centros: %.3f m\n", D);
-    Serial.printf("Distancia R: %.3f m\n", R);
-
-    // Condición de existencia LRL
+    // Condicion de existencia LRL
     if (D > 4.0 * R)
-    {
-        Serial.println("❌ No existe trayectoria LRL (D > 4R)");
         return false;
-    }
 
-    // Cálculo del círculo intermedio
+    // Cálculo del circulo intermedio
     double alpha = std::atan2(c2.y - c1.y, c2.x - c1.x);
     double beta = std::acos(D / (4.0 * R));
 
@@ -191,9 +185,6 @@ bool DubinsPlanner::dubinsLRL(const Pose &start, const Pose &goal, DubinsPath &p
     double a3e = std::atan2(goal.y - c2.y, goal.x - c2.x);
     double L3 = R * angleDiff(a3s, a3e, true);
 
-    /* =========================
-       Construcción del path
-       ========================= */
 
     path.seg[0] = {SEG_LEFT, L1};
     path.seg[1] = {SEG_RIGHT, L2};
@@ -219,12 +210,8 @@ bool DubinsPlanner::dubinsLSL(const Pose &s, const Pose &g, DubinsPath &path)
         return false;
 
     float D = norm(c2 - c1);
-    Serial.printf("Distancia entre centros LSL: %.3f m\n", D);
     if (D < 2.0 * R)
-    {
-        Serial.println("❌ No existe trayectoria LSL (D < 2R)");
         return false;
-    }
 
     double a1s = atan2(s.y - c1.y, s.x - c1.x);
     double a1e = atan2(p1.y - c1.y, p1.x - c1.x);
@@ -259,15 +246,14 @@ bool DubinsPlanner::dubinsLSR(const Pose &s, const Pose &g, DubinsPath &path)
     Vec2 dc = c2 - c1;
     double D = norm(dc);
 
-    // Condición de existencia
+    // Condicion de existencia
     if (D < 2.0 * R)
         return false;
 
-    // Ángulos base
+
     double theta = atan2(dc.y, dc.x);
     double phi = acos(2.0 * R / D);
 
-    // Elegimos la solución "natural"
     double ang = theta + phi;
 
     // Puntos tangentes
@@ -313,20 +299,15 @@ bool DubinsPlanner::dubinsRLR(const Pose &start, const Pose &goal, DubinsPath &p
         goal.y + R * sin(goal.theta - M_PI_2)};
 
     double D = norm(c2 - c1);
-    Serial.printf("Distancia entre centros RLR: %.3f m\n", D);
-
-    // Condición de existencia
+    // Condicion de existencia
     if (D > 4.0 * R)
-    {
-        Serial.println("❌ No existe trayectoria RLR (D > 4R)");
         return false;
-    }
 
     double alpha = atan2(c2.y - c1.y, c2.x - c1.x);
     double beta = acos(D / (4.0 * R));
     double theta = alpha - beta;
 
-    // Centro del círculo intermedio
+    // Centro del circulo intermedio
     Vec2 c3 = {
         c1.x + 2.0 * R * cos(theta),
         c1.y + 2.0 * R * sin(theta)};
@@ -424,7 +405,7 @@ bool DubinsPlanner::dubinsRSR(const Pose &s, const Pose &g, DubinsPath &path)
     // Distancia entre centros
     double D = norm(c2 - c1);
 
-    // Condición de existencia (igual a MATLAB)
+    // Condicion de existencia 
     if (D < 2.0 * R)
     {
         return false;
@@ -482,12 +463,6 @@ bool DubinsPlanner::compute(
             bestPath = candidate;
             found = true;
         }
-        Serial.printf(
-            "LSL | %.3f %.3f %.3f | TOTAL %.3f\n",
-            candidate.seg[0].length,
-            candidate.seg[1].length,
-            candidate.seg[2].length,
-            candidate.totalLength);
     }
 
     // ===== LRL =====
@@ -498,16 +473,9 @@ bool DubinsPlanner::compute(
             bestPath = candidate;
             found = true;
         }
-        Serial.printf(
-            "LRL | %.3f %.3f %.3f | TOTAL %.3f\n",
-            candidate.seg[0].length,
-            candidate.seg[1].length,
-            candidate.seg[2].length,
-            candidate.totalLength);
     }
 
     // ===== LSR =====
-
     if (!dubinsLSL(start, goal, candidate))
     {
         if (dubinsLSR(start, goal, candidate))
@@ -517,12 +485,6 @@ bool DubinsPlanner::compute(
                 bestPath = candidate;
                 found = true;
             }
-            Serial.printf(
-                "LSR | %.3f %.3f %.3f | TOTAL %.3f\n",
-                candidate.seg[0].length,
-                candidate.seg[1].length,
-                candidate.seg[2].length,
-                candidate.totalLength);
         }
 
         if (dubinsRSL(start, goal, candidate))
@@ -532,12 +494,6 @@ bool DubinsPlanner::compute(
                 bestPath = candidate;
                 found = true;
             }
-            Serial.printf(
-                "RSL | %.3f %.3f %.3f | TOTAL %.3f\n",
-                candidate.seg[0].length,
-                candidate.seg[1].length,
-                candidate.seg[2].length,
-                candidate.totalLength);
         }
     }
 
@@ -549,12 +505,6 @@ bool DubinsPlanner::compute(
             bestPath = candidate;
             found = true;
         }
-        Serial.printf(
-            "RLR | %.3f %.3f %.3f | TOTAL %.3f\n",
-            candidate.seg[0].length,
-            candidate.seg[1].length,
-            candidate.seg[2].length,
-            candidate.totalLength);
     }
 
     // ===== RSR =====
@@ -565,27 +515,20 @@ bool DubinsPlanner::compute(
             bestPath = candidate;
             found = true;
         }
-        Serial.printf(
-            "RSR | %.3f %.3f %.3f | TOTAL %.3f\n",
-            candidate.seg[0].length,
-            candidate.seg[1].length,
-            candidate.seg[2].length,
-            candidate.totalLength);
     }
 
     return found;
 }
 float DubinsPlanner::compute_rmin(float delta_max)
 {
-    // Radio mínimo de giro basado en la geometría del vehículo
-    const float L = 0.175f;                                  // Longitud del vehículo en metros
+
+    const float L = 0.175f;                                  // Longitud del vehiculo en metros
     const float W = 0.18f;                                   // Distancia entre ruedas en metros
-    const float delta_max_rad = delta_max * (M_PI / 180.0f); // Ángulo máximo del servo en radianes
+    const float delta_max_rad = delta_max * (M_PI / 180.0f); 
 
     // Cálculo del radio mínimo de giro
     float r_min = (L / tanf(delta_max_rad)) + (W / 2.0f);
 
-    Serial.printf("Radio mínimo de giro calculado: %.3f m para delta_max = %.2f grados\n", r_min, delta_max);
     return r_min;
 }
 

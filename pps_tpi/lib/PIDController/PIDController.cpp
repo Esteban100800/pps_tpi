@@ -34,24 +34,6 @@ float PIDController::compute(float value, float max_integral)
 
   float output = kp * error + ki * integral + real_derivative;
 
-
-  //unsigned long now = millis();
-  /*if (now - lastPrintTime >= 100)
-  {
-    lastPrintTime = now;
-    Serial.print("sensed:");
-    Serial.print(value);
-    Serial.print(",Setpoint:");
-    Serial.print(setpoint);
-    Serial.print(",Derivative:");
-    Serial.print(real_derivative);
-    Serial.print(",Integral:");
-    Serial.print(integral);
-    Serial.print(",ki:");
-    Serial.print(ki);
-    Serial.print(",Error:");
-    Serial.println(error);
-  }*/
   return output;
 }
 
