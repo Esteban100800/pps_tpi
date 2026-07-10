@@ -111,6 +111,14 @@ float ReedsShepp::M(float theta)
     return theta;
 }
 
+bool ReedsShepp::nonneg(float &v)
+{
+    const float RS_EPS = 1e-4f;
+    if (v < -RS_EPS) return false;
+    if (v < 0.0f) v = 0.0f;
+    return true;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  Simetría de paths
 // ─────────────────────────────────────────────────────────────────────────────
@@ -153,6 +161,7 @@ std::vector<RSPathSegment> ReedsShepp::path1(float x, float y, float phi)
     float u, t;
     R(x - sin(phi), y - 1.0f + cos(phi), u, t);
     float v = M(phi - t);
+    if (!nonneg(t) || !nonneg(v)) return path;
     path.push_back({t, LEFT,     FORWARD});
     path.push_back({u, STRAIGHT, FORWARD});
     path.push_back({v, LEFT,     FORWARD});
@@ -169,6 +178,7 @@ std::vector<RSPathSegment> ReedsShepp::path2(float x, float y, float phi)
         float u = sqrt(rho * rho - 4.0f);
         float t = M(t1 + atan2(2.0f, u));
         float v = M(t - phi_new);
+        if (!nonneg(t) || !nonneg(v)) return path;
         path.push_back({t, LEFT,     FORWARD});
         path.push_back({u, STRAIGHT, FORWARD});
         path.push_back({v, RIGHT,    FORWARD});
@@ -187,6 +197,7 @@ std::vector<RSPathSegment> ReedsShepp::path3(float x, float y, float phi)
         float t = M(theta + M_PI / 2.0f + A);
         float u = M(M_PI - 2.0f * A);
         float v = M(phi - t - u);
+        if (!nonneg(t) || !nonneg(u) || !nonneg(v)) return path;
         path.push_back({t, LEFT,  FORWARD});
         path.push_back({u, RIGHT, BACKWARD});
         path.push_back({v, LEFT,  FORWARD});
@@ -205,6 +216,7 @@ std::vector<RSPathSegment> ReedsShepp::path4(float x, float y, float phi)
         float t = M(theta + M_PI / 2.0f + A);
         float u = M(M_PI - 2.0f * A);
         float v = M(t + u - phi);
+        if (!nonneg(t) || !nonneg(u) || !nonneg(v)) return path;
         path.push_back({t, LEFT,  FORWARD});
         path.push_back({u, RIGHT, BACKWARD});
         path.push_back({v, LEFT,  BACKWARD});
@@ -223,6 +235,7 @@ std::vector<RSPathSegment> ReedsShepp::path5(float x, float y, float phi)
         float A  = asin(constrain(2.0f * sin(u) / rho, -1.0f, 1.0f));
         float t  = M(theta + M_PI / 2.0f - A);
         float v  = M(t - u - phi);
+        if (!nonneg(t) || !nonneg(u) || !nonneg(v)) return path;
         path.push_back({t, LEFT,  FORWARD});
         path.push_back({u, RIGHT, FORWARD});
         path.push_back({v, LEFT,  BACKWARD});
@@ -248,6 +261,7 @@ std::vector<RSPathSegment> ReedsShepp::path6(float x, float y, float phi)
             u = M(M_PI - A);
         }
         v = M(phi - t + 2.0f * u);
+        if (!nonneg(t) || !nonneg(u) || !nonneg(v)) return path;
         path.push_back({t, LEFT,  FORWARD});
         path.push_back({u, RIGHT, FORWARD});
         path.push_back({u, LEFT,  BACKWARD});
@@ -268,6 +282,7 @@ std::vector<RSPathSegment> ReedsShepp::path7(float x, float y, float phi)
         float A = asin(constrain(2.0f * sin(u) / rho, -1.0f, 1.0f));
         float t = M(theta + M_PI / 2.0f + A);
         float v = M(t - phi);
+        if (!nonneg(t) || !nonneg(u) || !nonneg(v)) return path;
         path.push_back({t, LEFT,  FORWARD});
         path.push_back({u, RIGHT, BACKWARD});
         path.push_back({u, LEFT,  BACKWARD});
@@ -287,6 +302,7 @@ std::vector<RSPathSegment> ReedsShepp::path8(float x, float y, float phi)
         float A = atan2(2.0f, u + 2.0f);
         float t = M(theta + M_PI / 2.0f + A);
         float v = M(t - phi + M_PI / 2.0f);
+        if (!nonneg(u) || !nonneg(t) || !nonneg(v)) return path;
         path.push_back({t,          LEFT,     FORWARD});
         path.push_back({M_PI/2.0f,  RIGHT,    BACKWARD});
         path.push_back({u,          STRAIGHT, BACKWARD});
@@ -306,6 +322,7 @@ std::vector<RSPathSegment> ReedsShepp::path9(float x, float y, float phi)
         float A = atan2(u + 2.0f, 2.0f);
         float t = M(theta + M_PI / 2.0f - A);
         float v = M(t - phi - M_PI / 2.0f);
+        if (!nonneg(u) || !nonneg(t) || !nonneg(v)) return path;
         path.push_back({t,          LEFT,     FORWARD});
         path.push_back({u,          STRAIGHT, FORWARD});
         path.push_back({M_PI/2.0f,  RIGHT,    FORWARD});
@@ -324,6 +341,7 @@ std::vector<RSPathSegment> ReedsShepp::path10(float x, float y, float phi)
         float t = M(theta + M_PI / 2.0f);
         float u = rho - 2.0f;
         float v = M(phi - t - M_PI / 2.0f);
+        if (!nonneg(t) || !nonneg(u) || !nonneg(v)) return path;
         path.push_back({t,          LEFT,     FORWARD});
         path.push_back({M_PI/2.0f,  RIGHT,    BACKWARD});
         path.push_back({u,          STRAIGHT, BACKWARD});
@@ -342,6 +360,7 @@ std::vector<RSPathSegment> ReedsShepp::path11(float x, float y, float phi)
         float t = M(theta);
         float u = rho - 2.0f;
         float v = M(phi - t - M_PI / 2.0f);
+        if (!nonneg(t) || !nonneg(u) || !nonneg(v)) return path;
         path.push_back({t,          LEFT,     FORWARD});
         path.push_back({u,          STRAIGHT, FORWARD});
         path.push_back({M_PI/2.0f,  LEFT,     FORWARD});
@@ -361,6 +380,7 @@ std::vector<RSPathSegment> ReedsShepp::path12(float x, float y, float phi)
         float A = std::atan2(2.0f, u + 4.0f);
         float t = M(theta + M_PI / 2.0f + A);
         float v = M(t - phi);
+        if (!nonneg(u) || !nonneg(t) || !nonneg(v)) return path;
         path.push_back({t,          LEFT,     FORWARD});
         path.push_back({M_PI/2.0f,  RIGHT,    BACKWARD});
         path.push_back({u,          STRAIGHT, BACKWARD});

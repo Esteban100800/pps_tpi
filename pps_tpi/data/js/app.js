@@ -319,8 +319,28 @@ async function getData() {
       x, y,
       err_servo, err_motor, err_motor2,
       deriv_servo, deriv_motor, deriv_motor2,
-      integ_servo, integ_motor, integ_motor2
+      integ_servo, integ_motor, integ_motor2,
+      rs_path
     } = data;
+
+    // ---- INFO DEL PATH REEDS-SHEPP ----
+    const rsPathEl = document.getElementById("rs_path_info");
+    if (rsPathEl) {
+      if (rs_path) {
+        const lines = rs_path.split(";").map(seg => {
+          const parts = seg.split(":");
+          if (parts.length === 4) {
+            const [i, type, gear, len] = parts;
+            return `[${i}] ${type.padEnd(8)} ${gear}  len=${len}`;
+          }
+          return seg; // linea "total:x.xxx"
+        });
+        rsPathEl.textContent = lines.join("\n");
+        rsPathEl.style.display = "block";
+      } else {
+        rsPathEl.style.display = "none";
+      }
+    }
 
     [
       [yawChart, yaw, setpoint_servo, err_servo, integ_servo, deriv_servo, 'yawChart'],
@@ -409,6 +429,29 @@ function sendGoalDash() {
   const theta = document.getElementById("dash_goal_theta").value;
 
   fetch(`/set_goal?x=${x}&y=${y}&theta=${theta}`)
+    .then(res => res.text())
+    .then(txt => console.log("Respuesta ESP32:", txt))
+    .catch(err => console.error(err));
+}
+
+// "Enviar ahora": interrumpe el trayecto en curso y descarta la cola pendiente
+function sendGoalNow() {
+  const x = document.getElementById("goal_x").value;
+  const y = document.getElementById("goal_y").value;
+  const theta = document.getElementById("goal_theta").value;
+
+  fetch(`/set_goal_now?x=${x}&y=${y}&theta=${theta}`)
+    .then(res => res.text())
+    .then(txt => console.log("Respuesta ESP32:", txt))
+    .catch(err => console.error(err));
+}
+
+function sendGoalNowDash() {
+  const x = document.getElementById("dash_goal_x").value;
+  const y = document.getElementById("dash_goal_y").value;
+  const theta = document.getElementById("dash_goal_theta").value;
+
+  fetch(`/set_goal_now?x=${x}&y=${y}&theta=${theta}`)
     .then(res => res.text())
     .then(txt => console.log("Respuesta ESP32:", txt))
     .catch(err => console.error(err));

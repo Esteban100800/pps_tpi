@@ -59,11 +59,36 @@ void SetPendingGoal(void *parameter)
 
     while (1)
     {
-        if (myServer.getRequested())
+        if (myServer.getImmediateRequested())
+        {
+            newGoal = myServer.getImmediateGoal();
+
+            // Aborta el trayecto en curso y descarta lo que hubiera en la cola
+            xQueueReset(goalQueue);
+            car.stopAll();
+            pid_motor_left.reset();
+            pid_motor_right.reset();
+            pid_servo_hiwonder.reset();
+
+            if (myServer.isDubins())
+            {
+                odom.setFinished(true);
+                odom.setMove(false);
+            }
+            else
+            {
+                rs_move = false;
+                rs_finished = true;
+            }
+
+            xQueueSend(goalQueue, &newGoal, 0);
+            myServer.setImmediateRequested();
+        }
+        else if (myServer.getRequested())
         {
             newGoal = myServer.getPendingGoal();
-            xQueueSend(goalQueue, &newGoal, 0); 
-            myServer.setRequested(); 
+            xQueueSend(goalQueue, &newGoal, 0);
+            myServer.setRequested();
         }
 
         vTaskDelay(pdMS_TO_TICKS(100));
@@ -76,8 +101,8 @@ void controlTask(void *parameter)
 
     while (1)
     {
-        // Solo actúa si el modo activo es Dubins
-        if (myServer.isDubins() && !odom.move())
+        // Solo actúa si el modo activo es Dubins y no hay un trayecto en curso
+        if (myServer.isDubins() && !odom.move() && odom.isFinished())
         {
             if (xQueueReceive(goalQueue, &nextGoal, 0) == pdTRUE)
             {
@@ -105,7 +130,6 @@ void controlTask(void *parameter)
     }
 }
 
-// Equivalente a controlTask pero para Reeds-Shepp
 void controlTaskRS(void *parameter)
 {
     Pose nextGoal;
@@ -426,6 +450,19 @@ void rs_control(void *pvParameters)
         {
             if (rs_segment_index < (int)rs_path.size())
             {
+                // Al entrar en un nuevo segmento: capturar yaw de referencia
+                // ANTES de evaluar segmentDone (si no, se usa un yaw viejo,
+                // sobrante del segmento/path anterior, y el segmento se salta).
+                if (rs_new_segment)
+                {
+                    if (rs_path[rs_segment_index].type == STRAIGHT)
+                        rs_angle_straight = mpu.getYaw(); // yaw objetivo para PID de servo
+                    else
+                        rs_arc_start_yaw = mpu.getYaw(); // yaw inicial del arco
+
+                    rs_new_segment = false;
+                }
+
                 RSSegType seg_type = rs_path[rs_segment_index].type;
                 Gear      seg_gear = rs_path[rs_segment_index].gear;
                 float     motorDir = (seg_gear == FORWARD) ? 1.0f : -1.0f;
@@ -564,25 +601,6 @@ void rs_control(void *pvParameters)
                 }
 
                 mpu.update();
-
-                // Al entrar en un nuevo segmento: capturar yaw de referencia
-                if (rs_new_segment && rs_segment_index < (int)rs_path.size())
-                {
-                    const char* nt = (rs_path[rs_segment_index].type == LEFT)    ? "LEFT" :
-                                     (rs_path[rs_segment_index].type == RIGHT)   ? "RIGHT" : "STRAIGHT";
-                    const char* ng = (rs_path[rs_segment_index].gear == FORWARD) ? "FWD" : "BWD";
-                    float targetDeg = (rs_path[rs_segment_index].length / PATH_RADIUS) * (180.0f / PI);
-                    Serial.printf("==> Nuevo segmento [%d]: %s %s  len=%.3f m  target=%.1f°\n",
-                                  rs_segment_index, nt, ng,
-                                  rs_path[rs_segment_index].length, targetDeg);
-
-                    if (rs_path[rs_segment_index].type == STRAIGHT)
-                        rs_angle_straight = mpu.getYaw(); // yaw objetivo para PID de servo
-                    else
-                        rs_arc_start_yaw = mpu.getYaw(); // yaw inicial del arco
-
-                    rs_new_segment = false;
-                }
             }
         }
         else if (rs_move && rs_finished)
@@ -593,11 +611,6 @@ void rs_control(void *pvParameters)
             pid_motor_left.reset();
             pid_motor_right.reset();
             pid_servo_hiwonder.reset();
-
-            // Imprimir posición estimada al terminar (sin resetear — se usa la odom real)
-            Position p = odom.getPosition();
-            Serial.printf("Path completo. Odom: x=%.3f y=%.3f yaw=%.1f°\n",
-                          p.x, p.y, mpu.getYaw());
 
             rs_move = false;
         }

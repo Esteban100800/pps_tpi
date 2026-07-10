@@ -220,7 +220,24 @@ void ESPWebServer::setupRoutes()
 
     newGoalRequested = true;
 
-    server.send(200, "text/plain", "Nuevo setpoint aceptado"); });
+    server.send(200, "text/plain", "Objetivo encolado"); });
+
+    server.on("/set_goal_now", HTTP_GET, [this]()
+              {
+    if (!server.hasArg("x") || !server.hasArg("y") || !server.hasArg("theta")) {
+        server.send(400, "text/plain", "Faltan parametros");
+        return;
+    }
+
+    immediateGoal = {
+        server.arg("x").toFloat(),
+        server.arg("y").toFloat(),
+        server.arg("theta").toFloat() * DEG_TO_RAD
+    };
+
+    immediateGoalRequested = true;
+
+    server.send(200, "text/plain", "Objetivo inmediato aceptado, trayecto actual interrumpido"); });
 
     server.on("/set_algorithm", HTTP_GET, [this]() {
     if (!server.hasArg("mode")) {
@@ -271,8 +288,23 @@ void ESPWebServer::setRequested()
 }
 Pose ESPWebServer::getPendingGoal()
 {
-    
+
     return pendingGoal;
+}
+
+bool ESPWebServer::getImmediateRequested() const
+{
+    return immediateGoalRequested;
+}
+
+void ESPWebServer::setImmediateRequested()
+{
+    immediateGoalRequested = false;
+}
+
+Pose ESPWebServer::getImmediateGoal()
+{
+    return immediateGoal;
 }
 
 bool ESPWebServer::isSpeedRequested() 

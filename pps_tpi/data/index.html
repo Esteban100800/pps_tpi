@@ -177,7 +177,8 @@
               <input type="number" id="dash_goal_y" step="0.01" value="1.0" class="pos-param-input">
               <label for="dash_goal_theta">Theta objetivo (°):</label>
               <input type="number" id="dash_goal_theta" step="1" value="0" class="pos-param-input">
-              <button onclick="sendGoalDash()" class="pos-param-btn">Enviar trayectoria</button>
+              <button onclick="sendGoalDash()" class="pos-param-btn">Encolar objetivo</button>
+              <button onclick="sendGoalNowDash()" class="pos-param-btn">Enviar ahora</button>
             </div>
           </div>
         </div>
@@ -320,6 +321,10 @@
               style="font-size:0.82em; color:#aaa; margin-left:auto;">Dubins activo</span>
       </div>
 
+      <pre id="rs_path_info" style="background:rgba(255,255,255,0.08); border-radius:8px;
+             padding:10px 14px; font-size:0.8em; white-space:pre-wrap; max-width:480px;
+             display:none;"></pre>
+
       <div class="layout pid-hidden">
         <div class="chart-container position-chart-container">
           <div class="chart-section position-chart-section">
@@ -335,7 +340,8 @@
               <input type="number" id="goal_y" step="0.01" value="1.0" class="pos-param-input">
               <label for="goal_theta">Theta objetivo (°):</label>
               <input type="number" id="goal_theta" step="1" value="0" class="pos-param-input">
-              <button onclick="sendGoal()" class="pos-param-btn">Enviar trayectoria</button>
+              <button onclick="sendGoal()" class="pos-param-btn">Encolar objetivo</button>
+              <button onclick="sendGoalNow()" class="pos-param-btn">Enviar ahora</button>
             </div>
           </div>
         </div>

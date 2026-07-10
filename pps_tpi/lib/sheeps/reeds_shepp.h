@@ -43,6 +43,13 @@ private:
     void  R(float x, float y, float &r, float &theta);
     float M(float theta);   // normaliza ángulo a (-π, π]
 
+    // Valida que una longitud/ángulo de tramo sea >= 0 (con tolerancia).
+    // Si es negativo más allá de la tolerancia, el path candidato es
+    // geométricamente inválido y debe descartarse (criterio estándar de
+    // Reeds-Shepp: t,u,v deben ser no-negativos). Si es un negativo
+    // despreciable por error de punto flotante, se recorta a 0.
+    static bool nonneg(float &v);
+
     // Simetría de paths
     RSPathSegment              reverseGear    (const RSPathSegment &seg);
     RSPathSegment              reverseSteering(const RSPathSegment &seg);
