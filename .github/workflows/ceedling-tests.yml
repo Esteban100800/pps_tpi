@@ -23,5 +23,5 @@ jobs:
         run: gem install ceedling -v 1.1.4 --no-document
 
       - name: Run unit tests
-        working-directory: ceedling
+        working-directory: pps_tpi/ceedling
         run: ceedling test:all
