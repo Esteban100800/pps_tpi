@@ -27,7 +27,7 @@ public:
     // dt en segundos
     void updateFromRPM(float rpmRight,
                        float rpmLeft,
-                       float dt, float yawRad); // ← viene del MPU
+                       float dt, float yawRad); //  viene del MPU
 
     Position getPosition() const;
 

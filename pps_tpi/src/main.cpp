@@ -1,7 +1,6 @@
 #include "esp_web_server.h"
 #include "mpu_dmp.h"
 #include "PIDController.h"
-#include "servo_control.h"
 #include "car_functions.h"
 #include "dubin.h"
 #include "reeds_shepp.h"
@@ -33,25 +32,24 @@ ESPWebServer myServer(pid_servo_hiwonder, pid_motor_left, pid_motor_right, odom,
 
 QueueHandle_t goalQueue;
 
-// ─── Reeds-Shepp ────────────────────────────────────────────────────────────
+// ----reed shepp----
 ReedsShepp rs_planner(PATH_RADIUS);
 
-std::vector<RSPathSegment> rs_path;    // path calculado
-volatile int  rs_segment_index = 0;   // segmento actual
-volatile bool rs_new_segment   = false;
-volatile bool rs_move          = false;
-volatile bool rs_finished      = true;
+std::vector<RSPathSegment> rs_path; // path calculado
+volatile int rs_segment_index = 0;  // segmento actual
+volatile bool rs_new_segment = false;
+volatile bool rs_move = false;
+volatile bool rs_finished = true;
 volatile float rs_angle_straight = 0.0f;
-float rs_seg_dist = 0.0f;             // distancia acumulada en el segmento actual
+float rs_seg_dist = 0.0f;               // distancia acumulada en el segmento actual
 volatile float rs_arc_start_yaw = 0.0f; // yaw al inicio de cada segmento de arco
-Pose rs_goal_pose = {0.0, 0.0, 0.0};  // goal actual, para resetear odom al terminar
+Pose rs_goal_pose = {0.0, 0.0, 0.0};    // goal actual, para resetear odom al terminar
 
 // Flag que indica que el hardware (I2C, MPU, servo) ya fue inicializado
 volatile bool hardwareReady = false;
 
 // Filtro exponencial de RPM (compartido por car_control y rs_control)
 float filteredRPM[4] = {0};
-
 
 void SetPendingGoal(void *parameter)
 {
@@ -101,7 +99,7 @@ void controlTask(void *parameter)
 
     while (1)
     {
-        // Solo actúa si el modo activo es Dubins y no hay un trayecto en curso
+        // Solo actua si el modo activo es Dubins y no hay un trayecto en curso
         if (myServer.isDubins() && !odom.move() && odom.isFinished())
         {
             if (xQueueReceive(goalQueue, &nextGoal, 0) == pdTRUE)
@@ -145,7 +143,7 @@ void controlTaskRS(void *parameter)
                 Pose start = {pos.x, pos.y, pos.theta};
 
                 Pose normStart = rs_planner.normalizePose(start);
-                Pose normGoal  = rs_planner.normalizePose(nextGoal);
+                Pose normGoal = rs_planner.normalizePose(nextGoal);
 
                 auto all_paths = rs_planner.getAllPaths(normStart, normGoal);
                 int idx = rs_planner.getOptimalPathIndex(all_paths);
@@ -155,7 +153,7 @@ void controlTaskRS(void *parameter)
                     rs_path = all_paths[idx];
                     rs_planner.denormalizePath(rs_path);
 
-                    // Guardar el goal para resetear la odometría al terminar
+                    // Guardar el goal para resetear la odometriaa al terminar
                     rs_goal_pose = nextGoal;
 
                     // Limpiar filtro de RPM siempre al iniciar un path nuevo
@@ -165,9 +163,9 @@ void controlTaskRS(void *parameter)
                     car.SetEncoderCount(MOTOR_2, 0);
 
                     rs_segment_index = 0;
-                    rs_seg_dist      = 0.0f;
-                    rs_new_segment   = true;
-                    rs_finished      = false;
+                    rs_seg_dist = 0.0f;
+                    rs_new_segment = true;
+                    rs_finished = false;
 
                     pid_motor_left.reset();
                     pid_motor_right.reset();
@@ -196,7 +194,7 @@ void handleServer(void *parameter)
 
     while (1)
     {
-        // Espera hasta 20ms por un valor nuevo 
+        // Espera hasta 20ms por un valor nuevo
         if (xQueueReceive(yawQueue, &yawValue, 10 / portTICK_PERIOD_MS) == pdTRUE)
         {
             myServer.updateSensor(yawValue);
@@ -223,7 +221,8 @@ float getRPM_hiwonder(MotorID motorID)
     float rpm = pulses * 60.0f / (ENCODER_PULSES_PER_REV * DT_RPM_MEASUREMENT);
 
     // Descarta lecturas físicamente imposibles (encoder roto o inversión de marcha)
-    if (rpm > MAX_RPM * 1.5f) rpm = filteredRPM[motorID];
+    if (rpm > MAX_RPM * 1.5f)
+        rpm = filteredRPM[motorID];
 
     filteredRPM[motorID] = ALPHA * filteredRPM[motorID] + BETHA * rpm + BETHA * filteredRPM[motorID];
 
@@ -274,13 +273,17 @@ void car_control(void *pvParameters)
     mpu.begin();
 
     electronicDiff.computeWheelSpeeds(0.13f);
-    hardwareReady = true;   // avisa a rs_control que puede usar el hardware
+    hardwareReady = true; // avisa a rs_control que puede usar el hardware
 
     delay(1000);
     while (1)
     {
         // Si el modo activo es Reeds-Shepp, esta tarea cede el control
-        if (!myServer.isDubins()) { vTaskDelay(LOOP); continue; }
+        if (!myServer.isDubins())
+        {
+            vTaskDelay(LOOP);
+            continue;
+        }
 
         if (odom.move())
         {
@@ -325,8 +328,6 @@ void car_control(void *pvParameters)
                 objetivoServo = out_servo;
                 car.setServoAngle(objetivoServo);
             }
-
-
 
             /* ========= MOTORES ========= */
             rpmRight = getRPM_hiwonder(motorRight);
@@ -427,24 +428,31 @@ void car_control(void *pvParameters)
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+
 //  Tarea de control con Reeds-Shepp
-//  Espeja la lógica de car_control pero usa rs_path (segmentos variables,
+//  Espeja la logica de car_control pero usa rs_path (segmentos variables,
 //  incluye gear FORWARD / BACKWARD para marcha atrás).
-// ─────────────────────────────────────────────────────────────────────────────
+
 void rs_control(void *pvParameters)
 {
     // Espera a que car_control haya inicializado el hardware
-    while (!hardwareReady) { vTaskDelay(pdMS_TO_TICKS(100)); }
+    while (!hardwareReady)
+    {
+        vTaskDelay(pdMS_TO_TICKS(100));
+    }
 
     const MotorID motorRight = MOTOR_1;
-    const MotorID motorLeft  = MOTOR_2;
-    const TickType_t LOOP    = pdMS_TO_TICKS(10);
+    const MotorID motorLeft = MOTOR_2;
+    const TickType_t LOOP = pdMS_TO_TICKS(10);
 
     while (1)
     {
         // Si el modo activo es Dubins, esta tarea cede el control
-        if (!myServer.isReedsShepp()) { vTaskDelay(LOOP); continue; }
+        if (!myServer.isReedsShepp())
+        {
+            vTaskDelay(LOOP);
+            continue;
+        }
 
         if (rs_move && !rs_finished)
         {
@@ -464,69 +472,64 @@ void rs_control(void *pvParameters)
                 }
 
                 RSSegType seg_type = rs_path[rs_segment_index].type;
-                Gear      seg_gear = rs_path[rs_segment_index].gear;
-                float     motorDir = (seg_gear == FORWARD) ? 1.0f : -1.0f;
+                Gear seg_gear = rs_path[rs_segment_index].gear;
+                float motorDir = (seg_gear == FORWARD) ? 1.0f : -1.0f;
 
-                /* ===== SERVO =====
-                 * En marcha atrás la geometría de giro se invierte: para curvar
-                 * a la IZQUIERDA en el plano del mundo mientras el auto retrocede,
-                 * el servo debe apuntar a la DERECHA (y viceversa).
-                 * Por eso se niega el ángulo cuando gear == BACKWARD.
-                 */
+                // Servomotor: posición según tipo de segmento
                 if (seg_type == LEFT)
                 {
-                    // FWD→ servo izq (30°) | BWD→ servo der (-45°)
                     car.setServoAngle(30.0f);
                 }
                 else if (seg_type == RIGHT)
                 {
-                    // FWD→ servo der (-45°) | BWD→ servo izq (30°)
                     car.setServoAngle(-45.0f);
                 }
-                else    // STRAIGHT
+                else // STRAIGHT
                 {
                     pid_servo_hiwonder.setSetpoint(rs_angle_straight);
-                    float yaw_mpu   = mpu.getYaw();
+                    float yaw_mpu = mpu.getYaw();
                     float out_servo = pid_servo_hiwonder.compute(yaw_mpu, 30.0f);
                     out_servo = constrain(out_servo, -45.0f, 30.0f);
                     // En marcha atrás la corrección del PID también se invierte
-                    if (seg_gear == BACKWARD) out_servo = -out_servo;
+                    if (seg_gear == BACKWARD)
+                        out_servo = -out_servo;
                     car.setServoAngle(out_servo);
                 }
 
-                /* ===== SETPOINTS DE RPM ===== */
+                /*  SETPOINTS DE RPM  */
                 float sp_left = 0, sp_right = 0;
                 if (seg_type == LEFT)
                 {
-                    sp_left  = electronicDiff.getDifferential().leftRPM;
+                    sp_left = electronicDiff.getDifferential().leftRPM;
                     sp_right = electronicDiff.getDifferential().rightRPM;
                 }
                 else if (seg_type == RIGHT)
                 {
-                    sp_left  = electronicDiff.getDifferential().rightRPM;
+                    sp_left = electronicDiff.getDifferential().rightRPM;
                     sp_right = electronicDiff.getDifferential().leftRPM;
                 }
                 else
                 {
                     sp_left = sp_right = (electronicDiff.getDifferential().leftRPM +
-                                          electronicDiff.getDifferential().rightRPM) / 2.0f;
+                                          electronicDiff.getDifferential().rightRPM) /
+                                         2.0f;
                 }
                 pid_motor_left.setSetpoint(sp_left);
                 pid_motor_right.setSetpoint(sp_right);
 
-                /* ===== MOTORES ===== */
+                /*   MOTORES  */
                 rpmRight = getRPM_hiwonder(motorRight);
-                rpmLeft  = getRPM_hiwonder(motorLeft);
+                rpmLeft = getRPM_hiwonder(motorLeft);
 
                 float outRight = pid_motor_right.compute(rpmRight, 50.0f);
-                float outLeft  = pid_motor_left.compute(rpmLeft,  50.0f);
+                float outLeft = pid_motor_left.compute(rpmLeft, 50.0f);
 
                 // constrain en positivo y luego aplicar dirección (FWD/BWD)
                 outRight = constrain(outRight, 0.0f, 50.0f) * motorDir;
-                outLeft  = constrain(outLeft,  0.0f, 50.0f) * motorDir;
+                outLeft = constrain(outLeft, 0.0f, 50.0f) * motorDir;
 
                 car.setMotorPWM(motorRight, (int8_t)outRight, SPEED_MODE);
-                car.setMotorPWM(motorLeft,  (int8_t)outLeft,  SPEED_MODE);
+                car.setMotorPWM(motorLeft, (int8_t)outLeft, SPEED_MODE);
 
                 /* ===== ODOMETRÍA Y DISTANCIA ===== */
                 if (fabsf(rpmRight) > 2.0f || fabsf(rpmLeft) > 2.0f)
@@ -549,19 +552,17 @@ void rs_control(void *pvParameters)
                 bool segmentDone = false;
                 if (rs_path[rs_segment_index].type != STRAIGHT)
                 {
-                    float targetDeg = (rs_path[rs_segment_index].length / PATH_RADIUS)
-                                      * (180.0f / PI);
-                    float curYaw    = mpu.getYaw();
-                    float delta     = curYaw - rs_arc_start_yaw;
+                    float targetDeg = (rs_path[rs_segment_index].length / PATH_RADIUS) * (180.0f / PI);
+                    float curYaw = mpu.getYaw();
+                    float delta = curYaw - rs_arc_start_yaw;
                     // Normalizar a (-180, 180] para cruzar el ±180° sin problemas
-                    while (delta >  180.0f) delta -= 360.0f;
-                    while (delta <= -180.0f) delta += 360.0f;
+                    while (delta > 180.0f)
+                        delta -= 360.0f;
+                    while (delta <= -180.0f)
+                        delta += 360.0f;
                     float arcDone = fabsf(delta);
 
-                    segmentDone = (arcDone >= targetDeg)
-                               || (rs_seg_dist >= rs_path[rs_segment_index].length * 1.4f);
-
-
+                    segmentDone = (arcDone >= targetDeg) || (rs_seg_dist >= rs_path[rs_segment_index].length * 1.4f);
                 }
                 else
                 {
@@ -622,8 +623,8 @@ void rs_control(void *pvParameters)
             lastPrint = now;
             mpu.update();
             float yaw = mpu.getYaw();
-            xQueueSend(yawQueue,    &yaw,      0);
-            xQueueSend(motorQueue,  &rpmLeft,  0);
+            xQueueSend(yawQueue, &yaw, 0);
+            xQueueSend(motorQueue, &rpmLeft, 0);
             xQueueSend(motor2Queue, &rpmRight, 0);
         }
 
@@ -651,7 +652,7 @@ void setup()
         while (1)
             ;
     }
-    motorQueue = xQueueCreate(10, sizeof(float)); // Cambiar de int a float
+    motorQueue = xQueueCreate(10, sizeof(float)); 
 
     if (motorQueue == NULL)
     {
@@ -661,7 +662,7 @@ void setup()
             ;
     }
 
-    motor2Queue = xQueueCreate(10, sizeof(float)); // Cambiar de int a float
+    motor2Queue = xQueueCreate(10, sizeof(float)); 
     if (motor2Queue == NULL)
     {
         if (Serial)
@@ -690,13 +691,13 @@ void setup()
             ;
     }
 
-    xTaskCreatePinnedToCore(handleServer,         "Server",        8192, NULL, 2, NULL, 0);
-    xTaskCreatePinnedToCore(car_control,          "CarControl",    8192, NULL, 1, NULL, 1);
-    xTaskCreatePinnedToCore(rs_control,           "RSControl",     8192, NULL, 1, NULL, 1);
-    xTaskCreatePinnedToCore(controlTask,          "ControlTask",   4096, NULL, 1, NULL, 0);
-    xTaskCreatePinnedToCore(controlTaskRS,        "ControlTaskRS", 8192, NULL, 1, NULL, 0);
-    xTaskCreatePinnedToCore(change_speed_hiwonder,"ChangeSpeed",   8192, NULL, 1, NULL, 1);
-    xTaskCreatePinnedToCore(SetPendingGoal,       "SetPendingGoal",4096, NULL, 1, NULL, 0);
+    xTaskCreatePinnedToCore(handleServer, "Server", 8192, NULL, 2, NULL, 0);
+    xTaskCreatePinnedToCore(car_control, "CarControl", 8192, NULL, 1, NULL, 1);
+    xTaskCreatePinnedToCore(rs_control, "RSControl", 8192, NULL, 1, NULL, 1);
+    xTaskCreatePinnedToCore(controlTask, "ControlTask", 4096, NULL, 1, NULL, 0);
+    xTaskCreatePinnedToCore(controlTaskRS, "ControlTaskRS", 8192, NULL, 1, NULL, 0);
+    xTaskCreatePinnedToCore(change_speed_hiwonder, "ChangeSpeed", 8192, NULL, 1, NULL, 1);
+    xTaskCreatePinnedToCore(SetPendingGoal, "SetPendingGoal", 4096, NULL, 1, NULL, 0);
 }
 
 void loop()
