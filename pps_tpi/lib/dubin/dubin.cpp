@@ -1,4 +1,5 @@
 #include "dubin.h"
+#include <algorithm>
 
 DubinsPlanner::DubinsPlanner(float R_) : R(R_) {}
 

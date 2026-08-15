@@ -1,0 +1,63 @@
+---
+:project:
+  :name: "PPS TPI - Pure Logic Unit Tests"
+  :use_mocks: TRUE
+  :use_test_preprocessor: :none
+  :use_backtrace: :simple
+  :build_root: build
+  :test_file_prefix: test_
+  :default_tasks:
+    - test:all
+  :test_threads: 4
+  :compile_threads: 4
+  :release_build: FALSE
+
+:paths:
+  :test:
+    - +:test/**
+  :source:
+    - ../lib/PIDController/**
+    - ../lib/electronic_differential/**
+    - ../lib/dubin/**
+    - ../lib/sheeps/**
+  :include:
+    - ../lib/PIDController
+    - ../lib/electronic_differential
+    - ../lib/dubin
+    - ../lib/sheeps
+    - vendor/arduino_stub
+  :support: []
+  :libraries: []
+
+:defines:
+  :test:
+    - TEST
+  :release: []
+
+# Los modulos de logica pura son C++ (clases, referencias, std::vector), asi
+# que le pedimos a Ceedling que use .cpp y compile/linkee todo con g++ en vez
+# de gcc (Unity/CMock son C valido y compilan bien como C++).
+:extension:
+  :source: .cpp
+
+:tools:
+  :test_compiler:
+    :executable: g++
+  :test_linker:
+    :executable: g++
+
+:cmock:
+  :plugins:
+    - :ignore
+    - :callback
+
+:unity:
+  :defines:
+    - UNITY_INCLUDE_DOUBLE
+
+:plugins:
+  :load_paths: []
+  :enabled:
+    - module_generator
+    - report_tests_pretty_stdout
+...
